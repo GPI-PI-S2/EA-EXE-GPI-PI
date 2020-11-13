@@ -7,11 +7,6 @@ export function extractorInfo(extractor: Extractor): void {
 ┃ version:\t${extractor.register.version}\t\t┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛      
 `);
-	1;
-	console.log('------------------');
-	console.log(`name:      ${extractor.register.name}`);
-	console.log(`version:   ${extractor.register.version}`);
-	console.log('------------------\n');
 }
 export function selectableList<T extends { [key: string]: unknown }[]>(list: T): void {
 	const content = list.reduce((acc: Record<string, unknown>, { N, ...x }) => {

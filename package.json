@@ -11,7 +11,8 @@
 		"build": "npm run transpile && pkg . --out-path bin",
 		"build-linux": "npm run transpile && pkg . --out-path bin --targets linux",
 		"build-windows": "npm run transpile && pkg . --out-path bin --targets linux",
-		"build-macos": "npm run transpile && pkg . --out-path bin --targets linux"
+		"build-macos": "npm run transpile && pkg . --out-path bin --targets linux",
+		"git-update-local": "git remote update origin --prune"
 	},
 	"repository": {
 		"type": "git",
