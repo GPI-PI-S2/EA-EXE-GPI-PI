@@ -1,0 +1,55 @@
+{
+	"name": "ea-exe-gpi-pi",
+	"version": "1.0.0",
+	"description": "Versión ejecutable del proyecto EA-PI-GPI",
+	"main": "src/app.ts",
+	"scripts": {
+		"lint": "eslint . --ext .ts",
+		"serve": "npm run lint && cross-env LEVEL=info tsnd --respawn -r tsconfig-paths/register ./src/app.ts",
+		"prepare": "npm run lint && cross-env LEVEL=info && tsc -p ./tsconfig.json",
+		"transpile": "npm run prepare && babel dist -d dist",
+		"build": "npm run transpile && pkg . --out-path bin",
+		"build-linux": "npm run transpile && pkg . --out-path bin --targets linux",
+		"build-windows": "npm run transpile && pkg . --out-path bin --targets linux",
+		"build-macos": "npm run transpile && pkg . --out-path bin --targets linux"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/GPI-PI-S2/EA-EXE-GPI-PI.git"
+	},
+	"author": "Daniel Fredes",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/GPI-PI-S2/EA-EXE-GPI-PI/issues"
+	},
+	"homepage": "https://github.com/GPI-PI-S2/EA-EXE-GPI-PI#readme",
+	"dependencies": {
+		"@types/jsdom": "^16.2.5",
+		"@types/node": "^14.14.7",
+		"@types/prismjs": "^1.16.2",
+		"chalk": "^4.1.0",
+		"commander": "^6.2.0",
+		"cross-env": "^7.0.2",
+		"ea-common-gpi-pi": "github:GPI-PI-S2/EA-COMMON-GPI-PI",
+		"ea-core-gpi-pi": "github:GPI-PI-S2/EA-CORE-GPI-PI",
+		"jsdom": "^16.4.0",
+		"prismjs": "^1.22.0",
+		"ts-node-dev": "^1.0.0",
+		"tsconfig-paths": "^3.9.0",
+		"tsyringe": "^4.4.0",
+		"typescript": "^4.0.5",
+		"winston": "^3.3.3"
+	},
+	"devDependencies": {
+		"@babel/cli": "^7.12.1",
+		"@babel/core": "^7.12.3",
+		"@typescript-eslint/eslint-plugin": "^4.7.0",
+		"@typescript-eslint/parser": "^4.7.0",
+		"babel-plugin-module-resolver": "^4.0.0",
+		"babel-preset-minify": "^0.5.1",
+		"eslint": "^7.13.0",
+		"eslint-config-prettier": "^6.15.0",
+		"eslint-plugin-prettier": "^3.1.4"
+	},
+	"bin": "dist/app.js"
+}
