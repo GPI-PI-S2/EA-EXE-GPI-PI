@@ -32,7 +32,7 @@ export class File {
 		return JSON.parse(content);
 	}
 	async write(content: string | Record<string, unknown>): Promise<void> {
-		if (isObject(content)) content = JSON.stringify(content);
+		if (isObject(content as Record<string, unknown>)) content = JSON.stringify(content);
 		await fs.promises.writeFile(this.filepath, content as string);
 		return;
 	}
