@@ -4,6 +4,7 @@ import extractors from 'ea-core-gpi-pi';
 export default async (): Promise<void> => {
 	const telegram = extractors.get('telegram-extractor');
 	const back = true;
+
 	while (back) {
 		extractorInfo(telegram);
 		try {
