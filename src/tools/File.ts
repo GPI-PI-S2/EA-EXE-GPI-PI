@@ -1,4 +1,5 @@
 import { isObject } from 'ea-common-gpi-pi';
+import { ExtractorConfig } from '@/helpers/input';
 import fs from 'fs';
 export class File {
 	constructor(private filepath: string) {}
@@ -36,4 +37,19 @@ export class File {
 		await fs.promises.writeFile(this.filepath, content as string);
 		return;
 	}
+}
+
+export async function manageFileConfig(config: ExtractorConfig): Promise<File> {
+	const file = new File(`./config.json`);
+	if (await file.exist()) {
+		const content = await file.read('object');
+		if (content.telegram) {
+			config = content.telegram as ExtractorConfig;
+		} else {
+			config = { ...content, telegram: config };
+		}
+	} else {
+		await file.write({ telegram: config });
+	}
+	return file;
 }

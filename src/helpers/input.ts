@@ -1,5 +1,7 @@
 import { Readline } from '@/tools/Readline';
 import { Extractor } from 'ea-core-gpi-pi/dist/services/Extractor';
+import { File } from '@/tools/File';
+
 export function extractorInfo(extractor: Extractor): void {
 	console.log(`
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -38,4 +40,46 @@ export async function backOrExit(): Promise<0 | string> {
 	} catch (error) {
 		throw new Error(error);
 	}
+}
+export type Option = {
+	option: string;
+	path: string;
+	validation(options?: unknown): (option: string | number) => boolean | string;
+};
+
+export type ExtractorConfig = { [key: string]: unknown; limit?: number };
+export type Config = {
+	[key: string]: { [key: string]: unknown };
+	telegram?: ExtractorConfig;
+	emol?: ExtractorConfig;
+	youtube?: ExtractorConfig;
+	reddit?: ExtractorConfig;
+	twitter?: ExtractorConfig;
+};
+
+export type ConfigType = 'telegram' | 'emol' | 'youtube' | 'reddit' | 'twitter';
+
+export async function askAndSaveOption(
+	index: number,
+	file: File,
+	options: Option[],
+	configType: ConfigType,
+): Promise<Config> {
+	const { option, validation, path } = options[index - 1];
+	const result = await termmOrBackOrExit(`Ingrese ${option}`);
+	if (validation) {
+		const isValid = validation()(result);
+		if (typeof isValid !== 'boolean') {
+			console.log(`Error: ${isValid}`);
+			await backOrExit();
+			return;
+		}
+	}
+	const currentContent = await file.read('object');
+	const newContent = {
+		...currentContent,
+		[configType]: { ...currentContent[configType], [path]: result },
+	};
+	await file.write(newContent);
+	return newContent;
 }
