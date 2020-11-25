@@ -3,8 +3,8 @@ import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
 import { container } from 'tsyringe';
 import { Logger } from 'winston';
-import { ServerDBAnalysis } from './Analysis';
-import { ServerDBEntry } from './Entry';
+import { ExeDBAnalysis } from './Analysis';
+import { ExeDBEntry } from './Entry';
 
 export class ExeDBController implements DBController {
 	constructor() {
@@ -21,8 +21,8 @@ export class ExeDBController implements DBController {
 			filename: '../DB/LocalStore.db',
 			driver: sqlite3.Database,
 		});
-		this.$entry = new ServerDBEntry(this.db, this.checkDBError);
-		this.$analysis = new ServerDBAnalysis(this.db, this.checkDBError);
+		this.$entry = new ExeDBEntry(this.db, this.checkDBError);
+		this.$analysis = new ExeDBAnalysis(this.db, this.checkDBError);
 		await this.db.exec(`CREATE TABLE IF NOT EXISTS \`Entry\` (
   \`_id\` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   \`hash\` TEXT(256) NOT NULL,
@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 				);
 			}
 		}
+	}
 	/**
 	 * @deprecated Esta función no está disponible en el modo ejecutable
 	 */
