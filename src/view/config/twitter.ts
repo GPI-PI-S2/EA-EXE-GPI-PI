@@ -6,16 +6,18 @@ import {
 	Option,
 	ExtractorConfig,
 } from '@/helpers/input';
-import { manageFileConfig } from '@/tools/File';
+import { getCurrentData, manageFileConfig } from '@/tools/File';
 import extractors from 'ea-core-gpi-pi';
 import { vNumber } from 'ea-common-gpi-pi';
 
-const options: Option[] = [{ option: 'Limite de comentarios', path: 'limit', validation: vNumber }];
+const options: Option[] = [
+	{ option: 'Limite de comentarios', path: 'limit', validation: vNumber, isNumber: true },
+];
 
 export default async (): Promise<void> => {
-	let config: ExtractorConfig = {};
+	let config: ExtractorConfig = await getCurrentData('twitter');
 	const twitter = extractors.get('twitter-extractor');
-	const file = await manageFileConfig(config);
+	const file = await manageFileConfig(config, 'twitter');
 	const back = true;
 	while (back) {
 		const displayOptions = options.map(({ option, path }, i) => ({

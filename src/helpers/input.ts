@@ -44,7 +44,8 @@ export async function backOrExit(): Promise<0 | string> {
 export type Option = {
 	option: string;
 	path: string;
-	validation(options?: unknown): (option: string | number) => boolean | string;
+	isNumber?: boolean;
+	validation?(options?: unknown): (option: string | number) => boolean | string;
 };
 
 export type ExtractorConfig = { [key: string]: unknown; limit?: number };
@@ -57,7 +58,7 @@ export type Config = {
 	twitter?: ExtractorConfig;
 };
 
-export type ConfigType = 'telegram' | 'emol' | 'youtube' | 'reddit' | 'twitter';
+export type ConfigType = 'telegram' | 'emol' | 'youtube' | 'reddit' | 'twitter' | 'root';
 
 export async function askAndSaveOption(
 	index: number,
@@ -65,7 +66,7 @@ export async function askAndSaveOption(
 	options: Option[],
 	configType: ConfigType,
 ): Promise<Config> {
-	const { option, validation, path } = options[index - 1];
+	const { option, validation, path, isNumber = false } = options[index - 1];
 	const result = await termmOrBackOrExit(`Ingrese ${option}`);
 	if (validation) {
 		const isValid = validation()(result);
@@ -76,10 +77,18 @@ export async function askAndSaveOption(
 		}
 	}
 	const currentContent = await file.read('object');
-	const newContent = {
-		...currentContent,
-		[configType]: { ...currentContent[configType], [path]: result },
-	};
+	let newContent = { ...currentContent };
+	if (configType === 'root') {
+		newContent = { ...currentContent, [path]: isNumber ? parseInt(result as string) : result };
+	} else {
+		newContent = {
+			...currentContent,
+			[configType]: {
+				...currentContent[configType],
+				[path]: isNumber ? parseInt(result as string) : result,
+			},
+		};
+	}
 	await file.write(newContent);
 	return newContent;
 }

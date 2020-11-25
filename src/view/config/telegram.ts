@@ -6,19 +6,19 @@ import {
 	Option,
 	ExtractorConfig,
 } from '@/helpers/input';
-import { manageFileConfig } from '@/tools/File';
+import { getCurrentData, manageFileConfig } from '@/tools/File';
 import extractors from 'ea-core-gpi-pi';
 import { vPhone, vNumber } from 'ea-common-gpi-pi';
 
 const options: Option[] = [
 	{ option: 'Número de teléfono', path: 'phone', validation: vPhone },
-	{ option: 'Limite de comentarios', path: 'limit', validation: vNumber },
+	{ option: 'Limite de comentarios', path: 'limit', validation: vNumber, isNumber: true },
 ];
 
 export default async (): Promise<void> => {
-	let config: ExtractorConfig = {};
+	let config: ExtractorConfig = await getCurrentData('telegram');
 	const telegram = extractors.get('telegram-extractor');
-	const file = await manageFileConfig(config);
+	const file = await manageFileConfig(config, 'telegram');
 	const back = true;
 	while (back) {
 		const displayOptions = options.map(({ option, path }, i) => ({
@@ -37,7 +37,7 @@ export default async (): Promise<void> => {
 				options,
 				'telegram',
 			);
-			config = newConfig.telegram;
+			config = newConfig;
 		} catch (error) {
 			continue;
 		}

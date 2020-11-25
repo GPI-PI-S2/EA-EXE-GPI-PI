@@ -1,5 +1,4 @@
 import {
-	extractorInfo,
 	selectableList,
 	termmOrBackOrExit,
 	askAndSaveOption,
@@ -7,17 +6,17 @@ import {
 	ExtractorConfig,
 } from '@/helpers/input';
 import { getCurrentData, manageFileConfig } from '@/tools/File';
-import extractors from 'ea-core-gpi-pi';
-import { vNumber } from 'ea-common-gpi-pi';
+import { vNumber, vEmail } from 'ea-common-gpi-pi';
 
 const options: Option[] = [
 	{ option: 'Limite de comentarios', path: 'limit', validation: vNumber, isNumber: true },
+	{ option: 'Correo institucional', path: 'email', validation: vEmail },
+	{ option: 'Nombre completo', path: 'fullName' },
 ];
 
 export default async (): Promise<void> => {
-	let config: ExtractorConfig = await getCurrentData('reddit');
-	const reddit = extractors.get('reddit-extractor');
-	const file = await manageFileConfig(config, 'reddit');
+	let config: ExtractorConfig = await getCurrentData('root');
+	const file = await manageFileConfig(config, 'root');
 	const back = true;
 	while (back) {
 		const displayOptions = options.map(({ option, path }, i) => ({
@@ -25,13 +24,12 @@ export default async (): Promise<void> => {
 			Opción: option,
 			Valor: config[path],
 		}));
-		extractorInfo(reddit);
 		selectableList(displayOptions);
 		try {
 			const nextAction = await termmOrBackOrExit('Ingrese opción');
 			if (nextAction === 0) return;
-			const newConfig = await askAndSaveOption(parseInt(nextAction), file, options, 'reddit');
-			config = newConfig.reddit;
+			const newConfig = await askAndSaveOption(parseInt(nextAction), file, options, 'root');
+			config = newConfig;
 		} catch (error) {
 			console.log(error);
 			continue;

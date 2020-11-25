@@ -1,5 +1,5 @@
 import { isObject } from 'ea-common-gpi-pi';
-import { ExtractorConfig } from '@/helpers/input';
+import { ConfigType, ExtractorConfig } from '@/helpers/input';
 import fs from 'fs';
 export class File {
 	constructor(private filepath: string) {}
@@ -39,17 +39,38 @@ export class File {
 	}
 }
 
-export async function manageFileConfig(config: ExtractorConfig): Promise<File> {
+export async function manageFileConfig(
+	config: ExtractorConfig,
+	configType: ConfigType,
+): Promise<File> {
 	const file = new File(`./config.json`);
 	if (await file.exist()) {
 		const content = await file.read('object');
-		if (content.telegram) {
-			config = content.telegram as ExtractorConfig;
+		if (configType === 'root') {
+			config = content;
+		} else if (content[configType]) {
+			config = content[configType] as ExtractorConfig;
 		} else {
-			config = { ...content, telegram: config };
+			config = { ...content, [configType]: config };
 		}
 	} else {
-		await file.write({ telegram: config });
+		let newConfig = {};
+		if (configType === 'root') {
+			newConfig = { ...config };
+		} else {
+			newConfig = { ...newConfig, [configType]: config };
+		}
+		await file.write(newConfig);
 	}
 	return file;
+}
+
+export async function getCurrentData(configType: ConfigType): Promise<ExtractorConfig> {
+	const file = new File('./config.json');
+	if (await file.exist()) {
+		const content = await file.read('object');
+		if (configType === 'root') return content as ExtractorConfig;
+		return content[configType] as ExtractorConfig;
+	}
+	return {} as ExtractorConfig;
 }
