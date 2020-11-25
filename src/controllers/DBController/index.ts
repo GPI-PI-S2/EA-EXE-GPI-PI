@@ -18,7 +18,7 @@ export class ExeDBController implements DBController {
 	}
 	async connect(): Promise<void> {
 		this.db = await open({
-			filename: '../DB/LocalStore.db',
+			filename: 'LocalStore.db',
 			driver: sqlite3.Database,
 		});
 		this.$entry = new ExeDBEntry(this.db, this.checkDBError);
@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 	CONSTRAINT \`Analysis\` FOREIGN KEY (\`_entryId\`) REFERENCES \`Entry\`(\`_id\`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 `);
+		this.logger.info('DB ready');
 	}
 	private db: Database;
 	private readonly logger = container.resolve<Logger>('logger');
@@ -88,7 +89,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 	};
 	private checkDBError(res: unknown, info: string): void {
 		if (!res) {
-			this.logger.log('Internal DB Error on ', info);
+			this.logger.error(`Internal DB Error on ${info}`);
 			throw 'Internal DB Error';
 		}
 	}

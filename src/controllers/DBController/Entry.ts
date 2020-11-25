@@ -11,6 +11,24 @@ export class ExeDBEntry implements DBEntry {
 	) {}
 
 	private readonly logger = container.resolve<Logger>('logger');
+	private objectPropWildcardSQL(object: unknown): string {
+		return Object.keys(object)
+			.map((key) => key + ' = ?')
+			.join(', ');
+	}
+	private objectWildcardSQL(object: unknown): string {
+		return (
+			'(' +
+			Object.keys(object)
+				.map(() => '?')
+				.join(', ') +
+			')'
+		);
+	}
+	private objectPropSQL(object: unknown): string {
+		return '(' + Object.keys(object).join(', ') + ')';
+	}
+
 	async create(
 		entry: DBEntry.Input,
 		force: boolean,
@@ -19,7 +37,7 @@ export class ExeDBEntry implements DBEntry {
 		entry.hash = MD5(entry.content).toString();
 
 		const today = new Date();
-		entry.created = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDay}`;
+		entry.created = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDay()}`;
 
 		const checkPrev = await this.db.get<{ _id: DBController.id }>(
 			'SELECT _id FROM Entry WHERE hash = ?;',
@@ -27,15 +45,21 @@ export class ExeDBEntry implements DBEntry {
 		);
 
 		if (!checkPrev) {
-			const res = await this.db.run('INSERT INTO Entry SET ?', [entry]);
+			const propsSQL = this.objectPropSQL(entry);
+			const wildcards = this.objectWildcardSQL(entry);
+			const res = await this.db.run(
+				`INSERT INTO Entry ${propsSQL} VALUES ${wildcards};`,
+				Object.values(entry),
+			);
 			return { _id: res.lastID };
 		} else {
 			const existingId = checkPrev._id;
 			// Indica si realmente fue reemplazado la entry
 			let replaced = false;
 			if (force) {
-				const res = await this.db.run('UPDATE Entry SET ? WHERE _id = ?;', [
-					entry,
+				const propWildcard = this.objectPropWildcardSQL(entry);
+				const res = await this.db.run(`UPDATE Entry SET ${propWildcard} WHERE _id = ?;`, [
+					...Object.values(entry),
 					existingId,
 				]);
 				this.checkDBError(res, 'create, update existing Entry');
@@ -53,8 +77,14 @@ export class ExeDBEntry implements DBEntry {
 		return res;
 	}
 	async update(_id: DBController.id, entry: DBEntry.Input): Promise<void> {
-		this.logger.info('Updating Entry, _id: ', _id);
-		const res = await this.db.run('UPDATE Entry SET ? WHERE _id = ?;', [entry, _id]);
+		this.logger.info(`Updating Entry, _id ${_id}`);
+		entry.hash = MD5(entry.content).toString();
+
+		const propWildcard = this.objectPropWildcardSQL(entry);
+		const res = await this.db.run(`UPDATE Entry SET ${propWildcard} WHERE _id = ?;`, [
+			...Object.values(entry),
+			_id,
+		]);
 		this.checkDBError(res, 'update Entry');
 		if (res.changes) {
 			this.logger.info('Entry updated');
@@ -64,7 +94,7 @@ export class ExeDBEntry implements DBEntry {
 		}
 	}
 	async delete(_id: DBController.id): Promise<void> {
-		this.logger.info('Deleting Entry, _id: ', _id);
+		this.logger.info(`Deleting Entry, _id ${_id}`);
 		const res = await this.db.run('UPDATE Entry SET _deleted = 1 WHERE _id = ?;', [_id]);
 		this.checkDBError(res, 'Entry delete');
 		if (res.changes) {

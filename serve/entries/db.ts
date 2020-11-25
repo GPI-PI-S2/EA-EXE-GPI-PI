@@ -22,5 +22,5 @@ import logger from '../../src/loaders/logger';
 export default async () => {
 	logger.info('Serve db started!');
 	const DBController = container.resolve<ExeDBController>('DBController');
-	logger.info('lis taylor');
+	await DBController.connect();
 };

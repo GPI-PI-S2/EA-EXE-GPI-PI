@@ -9,14 +9,34 @@ export class ExeDBAnalysis implements DBAnalysis {
 		private checkDBError: (res: unknown, info: string) => void,
 	) {}
 	private readonly logger = container.resolve<Logger>('logger');
+	private objectPropWildcardSQL(object: unknown): string {
+		return Object.keys(object)
+			.map((key) => `\`${key}\`` + ' = ?')
+			.join(', ');
+	}
+	private objectWildcardSQL(object: unknown): string {
+		return (
+			'(' +
+			Object.keys(object)
+				.map(() => '?')
+				.join(', ') +
+			')'
+		);
+	}
+	private objectPropSQL(object: unknown): string {
+		return (
+			'(' +
+			Object.keys(object)
+				.map((key) => `\`${key}\``)
+				.join(', ') +
+			')'
+		);
+	}
 	async create(
 		entry: DBAnalysis.Input,
 		force: boolean,
 	): Promise<{ _id: DBController.id; replaced?: boolean }> {
-		if (typeof entry._entryId === 'string' && !entry._entryId)
-			throw new Error('Invalid _entryId');
-		if (typeof entry._entryId === 'number' && entry._entryId < 0)
-			throw new Error('Invalid _entryId');
+		if (!entry._entryId) throw new Error('Invalid _entryId');
 
 		const checkPrev = await this.db.get<{ _id: DBController.id }>(
 			'SELECT _id FROM Analysis WHERE _entryId = ?',
@@ -24,10 +44,16 @@ export class ExeDBAnalysis implements DBAnalysis {
 		);
 
 		const today = new Date();
-		entry.completionDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDay}`;
+		entry.completionDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDay()}`;
 
 		if (!checkPrev) {
-			const res = await this.db.run('INSERT INTO Analysis SET ?', [entry]);
+			const propsSQL = this.objectPropSQL(entry);
+			const wildcards = this.objectWildcardSQL(entry);
+			const res = await this.db.run(
+				`INSERT INTO Analysis ${propsSQL} VALUES ${wildcards};`,
+				Object.values(entry),
+			);
+
 			this.checkDBError(res, 'Analysis create new');
 			return { _id: res.lastID };
 		} else {
@@ -36,10 +62,13 @@ export class ExeDBAnalysis implements DBAnalysis {
 			if (force) {
 				const newAnalysis = entry;
 				delete newAnalysis._entryId;
-				const res = await this.db.run('UPDATE Analysis SET ? WHERE _id = ?', [
-					newAnalysis,
-					checkPrev._id,
-				]);
+
+				const propWildcard = this.objectPropWildcardSQL(newAnalysis);
+				const res = await this.db.run(
+					`UPDATE Analysis SET ${propWildcard} WHERE _id = ?;`,
+					[...Object.values(newAnalysis), checkPrev._id],
+				);
+
 				this.checkDBError(res, 'Analysis force update');
 				replaced = true;
 			}
@@ -55,18 +84,22 @@ export class ExeDBAnalysis implements DBAnalysis {
 		return res;
 	}
 	async update(_id: DBController.id, entry: DBAnalysis.Input): Promise<void> {
-		this.logger.info('Updating Analysis, _id ', _id);
-		const res = await this.db.run('UPDATE Analysis SET ? WHERE _id = ?;', [entry, _id]);
+		this.logger.info(`Updating Analysis, _id ${_id}`);
+		const propWildcard = this.objectPropWildcardSQL(entry);
+		const res = await this.db.run(`UPDATE Analysis SET ${propWildcard} WHERE _id = ?;`, [
+			...Object.values(entry),
+			_id,
+		]);
 		this.checkDBError(res, 'update Analysis');
 		if (res.changes) {
-			this.logger.info('Entry updated');
+			this.logger.info('Analysis updated');
 		} else {
 			this.logger.error(`Id ${_id} NOT found, nothing to update`);
 			throw `Empty result`;
 		}
 	}
 	async delete(_id: DBController.id): Promise<void> {
-		this.logger.info('Deleting Analysis, _id: ', _id);
+		this.logger.info(`Deleting Analysis, _id: ${_id}`);
 		const res = await this.db.run('UPDATE Analysis SET _deleted = 1 WHERE _id = ?;', [_id]);
 		this.checkDBError(res, 'Analysis delete');
 		if (res.changes) {
