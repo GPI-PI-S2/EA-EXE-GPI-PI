@@ -1,3 +1,4 @@
+
 import MD5 from 'crypto-js/md5';
 import { DBController, DBEntry } from 'ea-core-gpi-pi';
 import { container } from 'tsyringe';
@@ -9,6 +10,7 @@ export class ServerDBEntry implements DBEntry {
 		private readonly db: Database,
 		private checkDBError: (res: unknown, info: string) => void,
 	) {}
+
 	private readonly logger = container.resolve<Logger>('logger');
 	async create(
 		entry: DBEntry.Input,
@@ -72,6 +74,7 @@ export class ServerDBEntry implements DBEntry {
 			this.logger.error(`Id ${_id} NOT found, nothing to delete`);
 			throw `Empty result`;
 		}
+
 	}
 	async list(
 		paginator: DBController.Paginator,

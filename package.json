@@ -5,19 +5,21 @@
 	"main": "src/app.ts",
 	"scripts": {
 		"lint": "eslint . --ext .ts",
+		"serve-db": "npm run lint && tsnd --respawn ./serve",
 		"serve": "npm run lint && cross-env LEVEL=info tsnd --respawn -r tsconfig-paths/register ./src/app.ts",
 		"prepare": "npm run lint && cross-env LEVEL=info && tsc -p ./tsconfig.json",
 		"transpile": "npm run prepare && babel dist -d dist",
 		"build": "npm run transpile && pkg . --out-path bin",
 		"build-linux": "npm run transpile && pkg . --out-path bin --targets linux",
 		"build-windows": "npm run transpile && pkg . --out-path bin --targets linux",
-		"build-macos": "npm run transpile && pkg . --out-path bin --targets linux"
+		"build-macos": "npm run transpile && pkg . --out-path bin --targets macos",
+		"git-update-local": "git remote update origin --prune"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/GPI-PI-S2/EA-EXE-GPI-PI.git"
 	},
-	"author": "Daniel Fredes",
+	"author": "DEV TEAM (PI-GPI-02-2020)",
 	"license": "ISC",
 	"bugs": {
 		"url": "https://github.com/GPI-PI-S2/EA-EXE-GPI-PI/issues"

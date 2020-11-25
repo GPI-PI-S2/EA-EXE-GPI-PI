@@ -1,5 +1,7 @@
 import { Readline } from '@/tools/Readline';
 import { Extractor } from 'ea-core-gpi-pi/dist/services/Extractor';
+import { File } from '@/tools/File';
+
 export function extractorInfo(extractor: Extractor): void {
 	console.log(`
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -7,11 +9,6 @@ export function extractorInfo(extractor: Extractor): void {
 ┃ version:\t${extractor.register.version}\t\t┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛      
 `);
-	1;
-	console.log('------------------');
-	console.log(`name:      ${extractor.register.name}`);
-	console.log(`version:   ${extractor.register.version}`);
-	console.log('------------------\n');
 }
 export function selectableList<T extends { [key: string]: unknown }[]>(list: T): void {
 	const content = list.reduce((acc: Record<string, unknown>, { N, ...x }) => {
@@ -43,4 +40,55 @@ export async function backOrExit(): Promise<0 | string> {
 	} catch (error) {
 		throw new Error(error);
 	}
+}
+export type Option = {
+	option: string;
+	path: string;
+	isNumber?: boolean;
+	validation?(options?: unknown): (option: string | number) => boolean | string;
+};
+
+export type ExtractorConfig = { [key: string]: unknown; limit?: number };
+export type Config = {
+	[key: string]: { [key: string]: unknown };
+	telegram?: ExtractorConfig;
+	emol?: ExtractorConfig;
+	youtube?: ExtractorConfig;
+	reddit?: ExtractorConfig;
+	twitter?: ExtractorConfig;
+};
+
+export type ConfigType = 'telegram' | 'emol' | 'youtube' | 'reddit' | 'twitter' | 'root';
+
+export async function askAndSaveOption(
+	index: number,
+	file: File,
+	options: Option[],
+	configType: ConfigType,
+): Promise<Config> {
+	const { option, validation, path, isNumber = false } = options[index - 1];
+	const result = await termmOrBackOrExit(`Ingrese ${option}`);
+	if (validation) {
+		const isValid = validation()(result);
+		if (typeof isValid !== 'boolean') {
+			console.log(`Error: ${isValid}`);
+			await backOrExit();
+			return;
+		}
+	}
+	const currentContent = await file.read('object');
+	let newContent = { ...currentContent };
+	if (configType === 'root') {
+		newContent = { ...currentContent, [path]: isNumber ? parseInt(result as string) : result };
+	} else {
+		newContent = {
+			...currentContent,
+			[configType]: {
+				...currentContent[configType],
+				[path]: isNumber ? parseInt(result as string) : result,
+			},
+		};
+	}
+	await file.write(newContent);
+	return newContent;
 }

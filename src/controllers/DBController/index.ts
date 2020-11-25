@@ -142,7 +142,10 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 				);
 			}
 		}
-
+	/**
+	 * @deprecated Esta función no está disponible en el modo ejecutable
+	 */
+	async bulkDB(dbPath: string): Promise<DBController.bulkDBResult> {
 		return;
 	}
 }
