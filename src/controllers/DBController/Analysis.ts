@@ -23,6 +23,9 @@ export class ServerDBAnalysis implements DBAnalysis {
 			[entry._entryId],
 		);
 
+		const today = new Date();
+		entry.completionDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDay}`;
+
 		if (!checkPrev) {
 			const res = await this.db.run('INSERT INTO Analysis SET ?', [entry]);
 			this.checkDBError(res, 'Analysis create new');
