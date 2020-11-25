@@ -23,7 +23,7 @@ export class ServerDBController implements DBController {
 		});
 		this.$entry = new ServerDBEntry(this.db, this.checkDBError);
 		this.$analysis = new ServerDBAnalysis(this.db, this.checkDBError);
-		this.db.exec(`CREATE TABLE IF NOT EXISTS \`Entry\` (
+		await this.db.exec(`CREATE TABLE IF NOT EXISTS \`Entry\` (
   \`_id\` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   \`hash\` TEXT(256) NOT NULL,
   \`created\` TEXT(128) NOT NULL,
