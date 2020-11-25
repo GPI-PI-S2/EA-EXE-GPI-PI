@@ -1,5 +1,6 @@
 import { selectableList, termmOrBackOrExit } from '@/helpers/input';
 import extractorsViews from './extractors';
+import configViews from './config';
 export default async (): Promise<void> => {
 	const exit = false;
 	const options = ['Extractores', 'Configuración', 'Sobre la app'].map((v, i) => ({
@@ -24,7 +25,7 @@ export default async (): Promise<void> => {
 				break;
 			}
 			case '2': {
-				console.log('No implementado 2');
+				await configViews();
 				break;
 			}
 			case '3': {
