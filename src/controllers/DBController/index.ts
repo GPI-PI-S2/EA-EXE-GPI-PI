@@ -11,7 +11,7 @@ export class ExeDBController implements DBController {
 		/*
 				Acá inicializar la db.
 				En caso de requerir métodos asíncronos, asignar la referencia acá
-				 y crear un método asíncrono que la inicialice.
+	y crear un método asíncrono que la inicialice.
 				 No usar promesas dentro del constructor
 				 Cambiar el tipo unknown de la variable DB por el correspondiente
 				*/

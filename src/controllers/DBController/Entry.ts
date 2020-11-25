@@ -3,6 +3,7 @@ import { DBController, DBEntry } from 'ea-core-gpi-pi';
 import { container } from 'tsyringe';
 import { Logger } from 'winston';
 import { Database } from 'sqlite';
+import { objectPropSQL, objectWildcardSQL, objectPropWildcardSQL } from './SQLUtils';
 
 export class ExeDBEntry implements DBEntry {
 	constructor(
@@ -11,23 +12,6 @@ export class ExeDBEntry implements DBEntry {
 	) {}
 
 	private readonly logger = container.resolve<Logger>('logger');
-	private objectPropWildcardSQL(object: unknown): string {
-		return Object.keys(object)
-			.map((key) => key + ' = ?')
-			.join(', ');
-	}
-	private objectWildcardSQL(object: unknown): string {
-		return (
-			'(' +
-			Object.keys(object)
-				.map(() => '?')
-				.join(', ') +
-			')'
-		);
-	}
-	private objectPropSQL(object: unknown): string {
-		return '(' + Object.keys(object).join(', ') + ')';
-	}
 
 	async create(
 		entry: DBEntry.Input,
@@ -45,8 +29,8 @@ export class ExeDBEntry implements DBEntry {
 		);
 
 		if (!checkPrev) {
-			const propsSQL = this.objectPropSQL(entry);
-			const wildcards = this.objectWildcardSQL(entry);
+			const propsSQL = objectPropSQL(entry);
+			const wildcards = objectWildcardSQL(entry);
 			const res = await this.db.run(
 				`INSERT INTO Entry ${propsSQL} VALUES ${wildcards};`,
 				Object.values(entry),
@@ -57,7 +41,7 @@ export class ExeDBEntry implements DBEntry {
 			// Indica si realmente fue reemplazado la entry
 			let replaced = false;
 			if (force) {
-				const propWildcard = this.objectPropWildcardSQL(entry);
+				const propWildcard = objectPropWildcardSQL(entry);
 				const res = await this.db.run(`UPDATE Entry SET ${propWildcard} WHERE _id = ?;`, [
 					...Object.values(entry),
 					existingId,
@@ -80,7 +64,7 @@ export class ExeDBEntry implements DBEntry {
 		this.logger.info(`Updating Entry, _id ${_id}`);
 		entry.hash = MD5(entry.content).toString();
 
-		const propWildcard = this.objectPropWildcardSQL(entry);
+		const propWildcard = objectPropWildcardSQL(entry);
 		const res = await this.db.run(`UPDATE Entry SET ${propWildcard} WHERE _id = ?;`, [
 			...Object.values(entry),
 			_id,

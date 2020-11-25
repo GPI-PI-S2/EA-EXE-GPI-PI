@@ -2,6 +2,7 @@ import { DBAnalysis, DBController } from 'ea-core-gpi-pi';
 import { container } from 'tsyringe';
 import { Logger } from 'winston';
 import { Database } from 'sqlite';
+import { objectPropSQL, objectWildcardSQL, objectPropWildcardSQL } from './SQLUtils';
 
 export class ExeDBAnalysis implements DBAnalysis {
 	constructor(
@@ -9,29 +10,6 @@ export class ExeDBAnalysis implements DBAnalysis {
 		private checkDBError: (res: unknown, info: string) => void,
 	) {}
 	private readonly logger = container.resolve<Logger>('logger');
-	private objectPropWildcardSQL(object: unknown): string {
-		return Object.keys(object)
-			.map((key) => `\`${key}\`` + ' = ?')
-			.join(', ');
-	}
-	private objectWildcardSQL(object: unknown): string {
-		return (
-			'(' +
-			Object.keys(object)
-				.map(() => '?')
-				.join(', ') +
-			')'
-		);
-	}
-	private objectPropSQL(object: unknown): string {
-		return (
-			'(' +
-			Object.keys(object)
-				.map((key) => `\`${key}\``)
-				.join(', ') +
-			')'
-		);
-	}
 	async create(
 		entry: DBAnalysis.Input,
 		force: boolean,
@@ -47,8 +25,8 @@ export class ExeDBAnalysis implements DBAnalysis {
 		entry.completionDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDay()}`;
 
 		if (!checkPrev) {
-			const propsSQL = this.objectPropSQL(entry);
-			const wildcards = this.objectWildcardSQL(entry);
+			const propsSQL = objectPropSQL(entry);
+			const wildcards = objectWildcardSQL(entry);
 			const res = await this.db.run(
 				`INSERT INTO Analysis ${propsSQL} VALUES ${wildcards};`,
 				Object.values(entry),
@@ -63,7 +41,7 @@ export class ExeDBAnalysis implements DBAnalysis {
 				const newAnalysis = entry;
 				delete newAnalysis._entryId;
 
-				const propWildcard = this.objectPropWildcardSQL(newAnalysis);
+				const propWildcard = objectPropWildcardSQL(newAnalysis);
 				const res = await this.db.run(
 					`UPDATE Analysis SET ${propWildcard} WHERE _id = ?;`,
 					[...Object.values(newAnalysis), checkPrev._id],
@@ -85,7 +63,7 @@ export class ExeDBAnalysis implements DBAnalysis {
 	}
 	async update(_id: DBController.id, entry: DBAnalysis.Input): Promise<void> {
 		this.logger.info(`Updating Analysis, _id ${_id}`);
-		const propWildcard = this.objectPropWildcardSQL(entry);
+		const propWildcard = objectPropWildcardSQL(entry);
 		const res = await this.db.run(`UPDATE Analysis SET ${propWildcard} WHERE _id = ?;`, [
 			...Object.values(entry),
 			_id,
