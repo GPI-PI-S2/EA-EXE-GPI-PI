@@ -3,7 +3,7 @@ import { container } from 'tsyringe';
 import { Logger } from 'winston';
 import { Database } from 'sqlite';
 
-export class ServerDBAnalysis implements DBAnalysis {
+export class ExeDBAnalysis implements DBAnalysis {
 	constructor(
 		private readonly db: Database,
 		private checkDBError: (res: unknown, info: string) => void,

@@ -6,7 +6,7 @@ import { Logger } from 'winston';
 import { ServerDBAnalysis } from './Analysis';
 import { ServerDBEntry } from './Entry';
 
-export class ServerDBController implements DBController {
+export class ExeDBController implements DBController {
 	constructor() {
 		/*
 				Acá inicializar la db.

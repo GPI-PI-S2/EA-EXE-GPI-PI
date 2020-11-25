@@ -1,11 +1,10 @@
-
 import MD5 from 'crypto-js/md5';
 import { DBController, DBEntry } from 'ea-core-gpi-pi';
 import { container } from 'tsyringe';
 import { Logger } from 'winston';
 import { Database } from 'sqlite';
 
-export class ServerDBEntry implements DBEntry {
+export class ExeDBEntry implements DBEntry {
 	constructor(
 		private readonly db: Database,
 		private checkDBError: (res: unknown, info: string) => void,
@@ -74,7 +73,6 @@ export class ServerDBEntry implements DBEntry {
 			this.logger.error(`Id ${_id} NOT found, nothing to delete`);
 			throw `Empty result`;
 		}
-
 	}
 	async list(
 		paginator: DBController.Paginator,
