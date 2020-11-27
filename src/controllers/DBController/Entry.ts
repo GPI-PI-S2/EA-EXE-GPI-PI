@@ -1,9 +1,9 @@
 import MD5 from 'crypto-js/md5';
 import { DBController, DBEntry } from 'ea-core-gpi-pi';
+import { Database } from 'sqlite';
 import { container } from 'tsyringe';
 import { Logger } from 'winston';
-import { Database } from 'sqlite';
-import { objectPropSQL, objectWildcardSQL, objectPropWildcardSQL } from './SQLUtils';
+import { objectPropSQL, objectPropWildcardSQL, objectWildcardSQL } from './SQLUtils';
 
 export class ExeDBEntry implements DBEntry {
 	constructor(
@@ -17,6 +17,7 @@ export class ExeDBEntry implements DBEntry {
 		entry: DBEntry.Input,
 		force: boolean,
 	): Promise<{ _id: DBController.id; replaced?: boolean }> {
+		if (!this.db) throw new Error('no db instance');
 		entry.content = entry.content ? entry.content : '';
 		entry.hash = MD5(entry.content).toString();
 
@@ -53,6 +54,7 @@ export class ExeDBEntry implements DBEntry {
 		}
 	}
 	async read(_id: DBController.id): Promise<DBEntry.Entry> {
+		if (!this.db) throw new Error('no db instance');
 		const res = await this.db.get<DBEntry.Entry>(
 			'SELECT * FROM Entry WHERE _id = ? AND _deleted = 0;',
 			[_id],
@@ -61,7 +63,8 @@ export class ExeDBEntry implements DBEntry {
 		return res;
 	}
 	async update(_id: DBController.id, entry: DBEntry.Input): Promise<void> {
-		this.logger.info(`Updating Entry, _id ${_id}`);
+		if (!this.db) throw new Error('no db instance');
+		this.logger.debug(`Updating Entry, _id ${_id}`);
 		entry.hash = MD5(entry.content).toString();
 
 		const propWildcard = objectPropWildcardSQL(entry);
@@ -71,18 +74,19 @@ export class ExeDBEntry implements DBEntry {
 		]);
 		this.checkDBError(res, 'update Entry');
 		if (res.changes) {
-			this.logger.info('Entry updated');
+			this.logger.debug('Entry updated');
 		} else {
 			this.logger.error(`Id ${_id} NOT found, nothing to update`);
 			throw `Empty result`;
 		}
 	}
 	async delete(_id: DBController.id): Promise<void> {
-		this.logger.info(`Deleting Entry, _id ${_id}`);
+		if (!this.db) throw new Error('no db instance');
+		this.logger.debug(`Deleting Entry, _id ${_id}`);
 		const res = await this.db.run('UPDATE Entry SET _deleted = 1 WHERE _id = ?;', [_id]);
 		this.checkDBError(res, 'Entry delete');
 		if (res.changes) {
-			this.logger.info('Entry deleted');
+			this.logger.debug('Entry deleted');
 		} else {
 			this.logger.error(`Id ${_id} NOT found, nothing to delete`);
 			throw `Empty result`;
@@ -92,6 +96,7 @@ export class ExeDBEntry implements DBEntry {
 		paginator: DBController.Paginator,
 		filter: DBEntry.Filter = {},
 	): Promise<DBController.PaggedList<DBEntry.Entry>> {
+		if (!this.db) throw new Error('no db instance');
 		// ojo, los filtros pueden llegar indefinidos
 		const { created, extractor, metaKey } = filter;
 		const filterArray = [

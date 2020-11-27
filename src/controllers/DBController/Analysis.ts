@@ -1,8 +1,8 @@
 import { DBAnalysis, DBController } from 'ea-core-gpi-pi';
+import { Database } from 'sqlite';
 import { container } from 'tsyringe';
 import { Logger } from 'winston';
-import { Database } from 'sqlite';
-import { objectPropSQL, objectWildcardSQL, objectPropWildcardSQL } from './SQLUtils';
+import { objectPropSQL, objectPropWildcardSQL, objectWildcardSQL } from './SQLUtils';
 
 export class ExeDBAnalysis implements DBAnalysis {
 	constructor(
@@ -15,6 +15,7 @@ export class ExeDBAnalysis implements DBAnalysis {
 		force: boolean,
 	): Promise<{ _id: DBController.id; replaced?: boolean }> {
 		if (!entry._entryId) throw new Error('Invalid _entryId');
+		if (!this.db) throw new Error('no db instance');
 
 		const checkPrev = await this.db.get<{ _id: DBController.id }>(
 			'SELECT _id FROM Analysis WHERE _entryId = ?',
@@ -54,6 +55,7 @@ export class ExeDBAnalysis implements DBAnalysis {
 		}
 	}
 	async read(_id: DBController.id): Promise<DBAnalysis.Analysis> {
+		if (!this.db) throw new Error('no db instance');
 		const res = await this.db.get<DBAnalysis.Analysis>(
 			'SELECT * FROM Analysis WHERE _id = ? AND _deleted = 0;',
 			[_id],
@@ -62,7 +64,8 @@ export class ExeDBAnalysis implements DBAnalysis {
 		return res;
 	}
 	async update(_id: DBController.id, entry: DBAnalysis.Input): Promise<void> {
-		this.logger.info(`Updating Analysis, _id ${_id}`);
+		if (!this.db) throw new Error('no db instance');
+		this.logger.debug(`Updating Analysis, _id ${_id}`);
 		const propWildcard = objectPropWildcardSQL(entry);
 		const res = await this.db.run(`UPDATE Analysis SET ${propWildcard} WHERE _id = ?;`, [
 			...Object.values(entry),
@@ -70,18 +73,19 @@ export class ExeDBAnalysis implements DBAnalysis {
 		]);
 		this.checkDBError(res, 'update Analysis');
 		if (res.changes) {
-			this.logger.info('Analysis updated');
+			this.logger.debug('Analysis updated');
 		} else {
 			this.logger.error(`Id ${_id} NOT found, nothing to update`);
 			throw `Empty result`;
 		}
 	}
 	async delete(_id: DBController.id): Promise<void> {
-		this.logger.info(`Deleting Analysis, _id: ${_id}`);
+		if (!this.db) throw new Error('no db instance');
+		this.logger.debug(`Deleting Analysis, _id: ${_id}`);
 		const res = await this.db.run('UPDATE Analysis SET _deleted = 1 WHERE _id = ?;', [_id]);
 		this.checkDBError(res, 'Analysis delete');
 		if (res.changes) {
-			this.logger.info('Analysis deleted');
+			this.logger.debug('Analysis deleted');
 		} else {
 			this.logger.error(`Id ${_id} NOT found, nothing to delete`);
 			throw `Empty result`;

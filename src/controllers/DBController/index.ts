@@ -1,6 +1,6 @@
 import { Analyzer, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
+import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
-import { open, Database } from 'sqlite';
 import { container } from 'tsyringe';
 import { Logger } from 'winston';
 import { ExeDBAnalysis } from './Analysis';
@@ -15,6 +15,10 @@ export class ExeDBController implements DBController {
 				 No usar promesas dentro del constructor
 				 Cambiar el tipo unknown de la variable DB por el correspondiente
 				*/
+	}
+	async disconnect(): Promise<void> {
+		if (!this.db) throw new Error('no db instance');
+		await this.db.close();
 	}
 	async connect(): Promise<void> {
 		this.db = await open({
@@ -61,7 +65,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 	CONSTRAINT \`Analysis\` FOREIGN KEY (\`_entryId\`) REFERENCES \`Entry\`(\`_id\`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 `);
-		this.logger.info('DB ready');
+		this.logger.debug('DB ready');
 	}
 	private db: Database;
 	private readonly logger = container.resolve<Logger>('logger');
@@ -94,6 +98,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 		}
 	}
 	async calc(metakey: string): Promise<DBController.calcResult> {
+		if (!this.db) throw new Error('no db instance');
 		const sentimentsAVGSQL =
 			'SELECT ' +
 			Object.keys(this.sentiments)
@@ -114,20 +119,22 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 		};
 	}
 	async stats(): Promise<{ [key: string]: number }> {
+		if (!this.db) throw new Error('no db instance');
 		// cuantos reg hay por cada extractor
-		const res = await this.db.all<{ total: number; metaKey: DBEntry.Entry['metaKey'] }[]>(
-			'SELECT COUNT(_id) as `total`, metaKey  FROM Entry GROUP BY metaKey',
+		const res = await this.db.all<{ total: number; extractor: DBEntry.Entry['extractor'] }[]>(
+			'SELECT COUNT(_id) as `total`, extractor  FROM Entry GROUP BY extractor',
 		);
 		this.checkDBError(res, 'stats');
 		return res.reduce(
-			(stats, { total, metaKey }) => ({
+			(stats, { total, extractor }) => ({
 				...stats,
-				[metaKey]: total,
+				[extractor]: total,
 			}),
 			{},
 		);
 	}
 	async insert(analysis: Analyzer.Analysis): Promise<void> {
+		if (!this.db) throw new Error('no db instance');
 		// prioritaria
 		const { result, metaKey, extractor, modelVersion } = analysis;
 
@@ -147,7 +154,9 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 	/**
 	 * @deprecated Esta función no está disponible en el modo ejecutable
 	 */
-	async bulkDB(dbPath: string): Promise<DBController.bulkDBResult> {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async bulkDB(_dbPath: string): Promise<DBController.bulkDBResult> {
+		if (!this.db) throw new Error('no db instance');
 		return;
 	}
 }
