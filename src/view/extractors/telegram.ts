@@ -24,7 +24,11 @@ async function login(extractor: Telegram) {
 		const content = (await file.read('object')) as content;
 		phone = content['phone'];
 		auth = content['auth'];
-		console.log(phone);
+	}
+	else {
+		console.error("Por favor, configura un teléfono celular para conectar con Telegram.");
+		const nextAction = await backOrExit();
+		if (nextAction === 0) return;
 	}
 	while (!phone) {
 		const iPhone = await termmOrBackOrExit('Ingrese un número de teléfono');
@@ -33,10 +37,7 @@ async function login(extractor: Telegram) {
 		if (typeof valid === 'boolean') phone = iPhone;
 		else console.debug('Error: login error', { valid });
 	}
-	console.log(phone)
 	let response = await extractor.deploy(config, { phone });
-	console.log(phone)
-	console.log(response)
 	if (response.status === Response.Status.PENDING) {
 		const pendingResponse = response.data as Telegram.Deploy.PendingResponse;
 		codeHash = pendingResponse.codeHash;
@@ -45,8 +46,6 @@ async function login(extractor: Telegram) {
 			if (iCode === 0) return;
 			const intCode = parseInt(iCode);
 			const valid = iCode.length > 4 && !isNaN(intCode);
-			console.log(valid);
-			console.log('ASDASD');
 			if (!valid) {
 				console.debug('Error: Código inválido');
 				continue;
@@ -56,7 +55,6 @@ async function login(extractor: Telegram) {
 			if(response.status === Response.Status.OK) code = intCode;
 			else console.info('Error: Codigo Invalido');
 		}
-		console.debug('SALI');
 		await file.write({ auth, phone } as content);
 	} else if (response.status === Response.Status.ERROR) throw new Error("can't continue");
 	const content = (await file.read('object')) as content;
@@ -89,20 +87,18 @@ export default async (): Promise<void> => {
 		extractorInfo(telegram);
 		try {
 			const loginResponse = await login(telegram);
-			console.log('SALI DE LOGIN RESPONSE')
-			console.log(loginResponse)
 			const selectedChat = await selectChat(loginResponse.chats);
 			const { accessHash, id, type } = selectedChat;
 			const result = (await telegram.obtain({
 				accessHash,
 				type,
 				chatId: id,
+				// metaKey: videoId, limit: config.limit
 				limit: 1000,
 				metaKey: JSON.stringify(selectedChat),
 				minSentenceSize: 2,
 			})) as Response<Telegram.Obtain.Response>;
-			console.log(result);
-
+			console.log(result.data);
 			const nextAction = await backOrExit();
 			if (nextAction === 0) return;
 		} catch (error) {
