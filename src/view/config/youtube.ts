@@ -8,17 +8,18 @@ import {
 } from '@/helpers/input';
 import { getCurrentData, manageFileConfig } from '@/tools/File';
 import extractors from 'ea-core-gpi-pi';
-import { vNumber } from 'ea-common-gpi-pi';
 
-const options: Option[] = [
-	{ option: 'Limite de comentarios', path: 'limit', validation: vNumber, isNumber: true },
-];
+const options: Option[] = [];
 
 export default async (): Promise<void> => {
 	let config: ExtractorConfig = await getCurrentData('youtube');
 	const youtube = extractors.get('youtube-extractor');
 	const file = await manageFileConfig(config, 'youtube');
-	const back = true;
+	let back = true;
+	if (options.length === 0) {
+		await termmOrBackOrExit('No hay opciones para este extractor');
+		back = false;
+	}
 	while (back) {
 		const displayOptions = options.map(({ option, path }, i) => ({
 			N: i + 1,
