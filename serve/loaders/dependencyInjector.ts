@@ -1,8 +1,7 @@
-import { ExeDBController } from '@/controllers/DBController';
 import { container } from 'tsyringe';
-import LoggerInstance from './logger';
-
-export default async (): Promise<void> => {
+import { ExeDBController } from '../../src/controllers/DBController';
+import LoggerInstance from '../../src/loaders/logger';
+export default async () => {
 	container.register('logger', { useValue: LoggerInstance });
 	container.register('DBController', { useValue: new ExeDBController() });
 	return;
