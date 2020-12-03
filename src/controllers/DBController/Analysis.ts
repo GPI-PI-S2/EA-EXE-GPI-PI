@@ -23,7 +23,7 @@ export class ExeDBAnalysis implements DBAnalysis {
 		);
 
 		const today = new Date();
-		entry.completionDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDay()}`;
+		entry.completionDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
 
 		if (!checkPrev) {
 			const propsSQL = objectPropSQL(entry);
