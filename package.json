@@ -38,6 +38,7 @@
 		"ea-core-gpi-pi": "github:GPI-PI-S2/EA-CORE-GPI-PI",
 		"jsdom": "^16.4.0",
 		"prismjs": "^1.22.0",
+		"reflect-metadata": "^0.1.13",
 		"sqlite": "^4.0.17",
 		"sqlite3": "^5.0.0",
 		"ts-node-dev": "^1.0.0",
