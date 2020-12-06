@@ -1,4 +1,4 @@
-import { Sentiments } from '@/../../EA-CORE-GPI-PI/dist/Analyzer/Sentiments';
+import { Sentiments } from 'ea-core-gpi-pi/dist/Analyzer/Sentiments';
 import { Anal, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
