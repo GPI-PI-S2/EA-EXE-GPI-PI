@@ -1,4 +1,5 @@
-import { Analyzer, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
+import { Sentiments } from '@/../../EA-CORE-GPI-PI/dist/Analyzer/Sentiments';
+import { Anal, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { container } from 'tsyringe';
@@ -72,7 +73,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 	$entry: DBEntry;
 	$analysis: DBAnalysis;
 
-	private readonly sentiments: Analyzer.sentiments = {
+	private readonly sentiments: Sentiments.list = {
 		Asertividad: NaN,
 		'Autoconciencia Emocional': NaN,
 		Autoestima: NaN,
@@ -106,7 +107,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 				.join(', ') +
 			', COUNT (e._id) as `total` FROM Entry e, Analysis a WHERE a.`_entryId` = e.`_id` AND e.metaKey = ?;';
 
-		const res = await this.db.get<Analyzer.sentiments & { total: number }>(
+		const res = await this.db.get<Sentiments.list & { total: number }>(
 			sentimentsAVGSQL,
 			metakey,
 		);
@@ -133,7 +134,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 			{},
 		);
 	}
-	async insert(analysis: Analyzer.Analysis): Promise<void> {
+	async insert(analysis: Anal.Analysis): Promise<void> {
 		if (!this.db) throw new Error('no db instance');
 		// prioritaria
 		const { result, metaKey, extractor, modelVersion } = analysis;
