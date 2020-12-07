@@ -1,5 +1,5 @@
-import { Sentiments } from 'ea-core-gpi-pi/dist/Analyzer/Sentiments';
 import { Anal, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
+import { Sentiments } from 'ea-core-gpi-pi/dist/Analyzer/Sentiments';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { container } from 'tsyringe';
@@ -77,23 +77,26 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 	$analysis: DBAnalysis;
 
 	private readonly sentiments: Sentiments.list = {
-		Asertividad: NaN,
-		'Autoconciencia Emocional': NaN,
-		Autoestima: NaN,
-		'Colaboración y Cooperación': NaN,
-		'Comprensión Organizativa': NaN,
-		'Conciencia Crítica': NaN,
-		'Desarrollo de las relaciones': NaN,
-		Empatía: NaN,
-		Influencia: NaN,
-		Liderazgo: NaN,
-		'Manejo de conflictos': NaN,
-		'Motivación de logro': NaN,
-		Optimismo: NaN,
-		'Percepción y comprensión Emocional': NaN,
-		'Relación Social': NaN,
-		'Tolerancia a la frustración': NaN,
-		Violencia: NaN,
+		asertividad: 0,
+		'autoconciencia emocional': 0,
+		autoestima: 0,
+		'desarrollar y estimular a los demás': 0,
+		empatía: 0,
+		'autocontrol emocional': 0,
+		influencia: 0,
+		liderazgo: 0,
+		optimismo: 0,
+		'relación social': 0,
+		'colaboración y cooperación': 0,
+		'comprensión organizativa': 0,
+		'conciencia crítica': 0,
+		'desarrollo de las relaciones': 0,
+		'tolerancia a la frustración': 0,
+		'comunicacion asertiva': 0,
+		'manejo de conflictos': 0,
+		'motivación de logro': 0,
+		'percepción y comprensión emocional': 0,
+		violencia: 0,
 	};
 	private checkDBError(res: unknown, info: string): void {
 		if (!res) {
