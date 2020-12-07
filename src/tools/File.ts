@@ -70,7 +70,8 @@ export async function getCurrentData(configType: ConfigType): Promise<ExtractorC
 	if (await file.exist()) {
 		const content = await file.read('object');
 		if (configType === 'root') return content as ExtractorConfig;
-		return content[configType] as ExtractorConfig;
+		if (configType in content) return content[configType] as ExtractorConfig;
+		return {} as ExtractorConfig;
 	}
 	return {} as ExtractorConfig;
 }
