@@ -1,4 +1,5 @@
-import { Analyzer, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
+import { Anal, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
+import { Sentiments } from 'ea-core-gpi-pi/dist/Analyzer/Sentiments';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { container } from 'tsyringe';
@@ -42,23 +43,26 @@ CREATE INDEX IF NOT EXISTS \`Entry_metaKey_IDX\` ON Entry (\`metaKey\`);
 CREATE TABLE IF NOT EXISTS \`Analysis\` (
   \`_id\` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   \`_entryId\` INTEGER NOT NULL,
-  \`Asertividad\` REAL NOT NULL DEFAULT 0,
-  \`Autoconciencia Emocional\` REAL NOT NULL DEFAULT 0,
-  \`Autoestima\` REAL NOT NULL DEFAULT 0,
-  \`Colaboración y Cooperación\` REAL NOT NULL DEFAULT 0,
-  \`Comprensión Organizativa\` REAL NOT NULL DEFAULT 0,
-  \`Conciencia Crítica\` REAL NOT NULL DEFAULT 0,
-  \`Desarrollo de las relaciones\` REAL NOT NULL DEFAULT 0,
-  \`Empatía\` REAL NOT NULL DEFAULT 0,
-  \`Influencia\` REAL NOT NULL DEFAULT 0,
-  \`Liderazgo\` REAL NOT NULL DEFAULT 0,
-  \`Manejo de conflictos\` REAL NOT NULL DEFAULT 0,
-  \`Motivación de logro\` REAL NOT NULL DEFAULT 0,
-  \`Percepción y comprensión Emocional\` REAL NOT NULL,
-  \`Optimismo\` REAL NOT NULL DEFAULT 0,
-  \`Relación Social\` REAL NOT NULL DEFAULT 0,
-  \`Tolerancia a la frustración\` REAL NOT NULL DEFAULT 0,
-  \`Violencia\` REAL NOT NULL DEFAULT 0,
+  \`asertividad\` REAL NOT NULL DEFAULT 0,
+  \`autoconciencia emocional\` REAL NOT NULL DEFAULT 0,
+  \`autoestima\` REAL NOT NULL DEFAULT 0,
+  \`desarrollar y estimular a los demás\` REAL NOT NULL DEFAULT 0,
+  \`empatía\` REAL NOT NULL DEFAULT 0,
+  \`autocontrol emocional\` REAL NOT NULL DEFAULT 0,
+  \`influencia\` REAL NOT NULL DEFAULT 0,
+  \`liderazgo\` REAL NOT NULL DEFAULT 0,
+  \`optimismo\` REAL NOT NULL DEFAULT 0,
+  \`relación social\` REAL NOT NULL DEFAULT 0,
+  \`colaboración y cooperación\` REAL NOT NULL DEFAULT 0,
+  \`comprensión organizativa\` REAL NOT NULL DEFAULT 0,
+  \`conciencia crítica\` REAL NOT NULL DEFAULT 0,
+  \`desarrollo de las relaciones\` REAL NOT NULL DEFAULT 0,
+  \`tolerancia a la frustración\` REAL NOT NULL DEFAULT 0,
+  \`comunicacion asertiva\` REAL NOT NULL DEFAULT 0,
+  \`manejo de conflictos\` REAL NOT NULL DEFAULT 0,
+  \`motivación de logro\` REAL NOT NULL DEFAULT 0,
+  \`percepción y comprensión emocional\` REAL NOT NULL DEFAULT 0,
+  \`violencia\` REAL NOT NULL DEFAULT 0,
   \`modelVersion\` TEXT(10) NOT NULL DEFAULT '0',
   \`_deleted\` BOOLEAN NOT NULL DEFAULT 0,
   \`completionDate\` TEXT(128) NOT NULL,
@@ -72,24 +76,27 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 	$entry: DBEntry;
 	$analysis: DBAnalysis;
 
-	private readonly sentiments: Analyzer.sentiments = {
-		Asertividad: NaN,
-		'Autoconciencia Emocional': NaN,
-		Autoestima: NaN,
-		'Colaboración y Cooperación': NaN,
-		'Comprensión Organizativa': NaN,
-		'Conciencia Crítica': NaN,
-		'Desarrollo de las relaciones': NaN,
-		Empatía: NaN,
-		Influencia: NaN,
-		Liderazgo: NaN,
-		'Manejo de conflictos': NaN,
-		'Motivación de logro': NaN,
-		Optimismo: NaN,
-		'Percepción y comprensión Emocional': NaN,
-		'Relación Social': NaN,
-		'Tolerancia a la frustración': NaN,
-		Violencia: NaN,
+	private readonly sentiments: Sentiments.list = {
+		asertividad: 0,
+		'autoconciencia emocional': 0,
+		autoestima: 0,
+		'desarrollar y estimular a los demás': 0,
+		empatía: 0,
+		'autocontrol emocional': 0,
+		influencia: 0,
+		liderazgo: 0,
+		optimismo: 0,
+		'relación social': 0,
+		'colaboración y cooperación': 0,
+		'comprensión organizativa': 0,
+		'conciencia crítica': 0,
+		'desarrollo de las relaciones': 0,
+		'tolerancia a la frustración': 0,
+		'comunicacion asertiva': 0,
+		'manejo de conflictos': 0,
+		'motivación de logro': 0,
+		'percepción y comprensión emocional': 0,
+		violencia: 0,
 	};
 	private checkDBError(res: unknown, info: string): void {
 		if (!res) {
@@ -106,7 +113,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 				.join(', ') +
 			', COUNT (e._id) as `total` FROM Entry e, Analysis a WHERE a.`_entryId` = e.`_id` AND e.metaKey = ?;';
 
-		const res = await this.db.get<Analyzer.sentiments & { total: number }>(
+		const res = await this.db.get<Sentiments.list & { total: number }>(
 			sentimentsAVGSQL,
 			metakey,
 		);
@@ -133,7 +140,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 			{},
 		);
 	}
-	async insert(analysis: Analyzer.Analysis): Promise<void> {
+	async insert(analysis: Anal.Analysis): Promise<void> {
 		if (!this.db) throw new Error('no db instance');
 		// prioritaria
 		const { result, metaKey, extractor, modelVersion } = analysis;

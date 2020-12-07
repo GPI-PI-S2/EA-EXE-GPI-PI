@@ -22,7 +22,7 @@ export class ExeDBEntry implements DBEntry {
 		entry.hash = MD5(entry.content).toString();
 
 		const today = new Date();
-		entry.created = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDay()}`;
+		entry.created = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
 
 		const checkPrev = await this.db.get<{ _id: DBController.id }>(
 			'SELECT _id FROM Entry WHERE hash = ?;',
