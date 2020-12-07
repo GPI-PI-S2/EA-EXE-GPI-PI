@@ -6,10 +6,14 @@ export default async (): Promise<void> => {
 	while (back) {
 		try {
 			console.clear();
+			const formattedStats: { [key: string]: { comments: number } } = {};
 			const DBController = container.resolve<ExeDBController>('DBController');
 			await DBController.connect();
 			const stats = await DBController.stats();
-			console.log(stats);
+			Object.entries(stats).map(([extractorId, comments]) => {
+				formattedStats[extractorId] = { comments };
+			});
+			console.table(formattedStats);
 			await DBController.disconnect();
 			const nextAction = await backOrExit();
 			if (nextAction === 0) return;
