@@ -1,6 +1,5 @@
 import {
 	backOrExit,
-	Config,
 	ExtractorConfig,
 	extractorInfo,
 	termmOrBackOrExit,

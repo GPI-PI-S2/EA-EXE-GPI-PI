@@ -53,6 +53,9 @@ export type ExtractorConfig = {
 	limit?: number;
 	apiKey?: string;
 	bearerToken?: string;
+	phone?: string;
+	apiId?: number;
+	apiHash?: string;
 };
 export type Config = {
 	[key: string]: { [key: string]: unknown };
