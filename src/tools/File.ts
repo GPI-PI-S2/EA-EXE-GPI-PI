@@ -1,9 +1,12 @@
 import { isObject } from 'ea-common-gpi-pi';
 import { ConfigType, ExtractorConfig } from '@/helpers/input';
-import fs from 'fs';
+import fs, { ReadStream } from 'fs';
 export class File {
 	constructor(private filepath: string) {}
 	private rawContent: Buffer;
+	async get(): Promise<ReadStream> {
+		return fs.createReadStream(this.filepath);
+	}
 	async exist(): Promise<boolean> {
 		try {
 			const response = await fs.promises.readFile(this.filepath);

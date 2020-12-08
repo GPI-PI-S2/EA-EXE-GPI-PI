@@ -3,9 +3,17 @@ import configViews from './config';
 import extractorsViews from './extractors';
 import statsViews from './stats';
 import aboutUsView from './about';
+import bulkView from './bulk';
+
 export default async (): Promise<void> => {
 	const exit = false;
-	const options = ['Extractores', 'Stats', 'Configuración', 'Sobre la app'].map((v, i) => ({
+	const options = [
+		'Extractores',
+		'Stats',
+		'Configuración',
+		'Sobre la app',
+		'Subir comentarios',
+	].map((v, i) => ({
 		N: i + 1,
 		Opción: v,
 	}));
@@ -36,6 +44,10 @@ export default async (): Promise<void> => {
 			}
 			case '4': {
 				await aboutUsView();
+				break;
+			}
+			case '5': {
+				await bulkView();
 				break;
 			}
 		}
