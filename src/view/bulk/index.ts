@@ -7,9 +7,9 @@ export default async (): Promise<void> => {
 		const DBController = container.resolve<ExeDBController>('DBController');
 		await DBController.connect();
 		console.log('⏳ Subiendo DB local...');
-		await DBController.bulkDB(`LocalStore.db`);
-		// TODO: Limpiar DB local
+		const result = await DBController.bulkDB(`LocalStore.db`);
 		console.log('✅ DB Sincronizada');
+		console.table(result);
 		await DBController.disconnect();
 		const nextAction = await backOrExit();
 		if (nextAction === 0) return;

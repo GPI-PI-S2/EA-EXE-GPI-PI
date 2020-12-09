@@ -188,6 +188,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 				},
 			);
 			data = result;
+			await file.delete();
 		} catch (error) {
 			console.error(error.response.data);
 			throw new Error(error);

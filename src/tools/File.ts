@@ -40,6 +40,14 @@ export class File {
 		await fs.promises.writeFile(this.filepath, content as string);
 		return;
 	}
+	async delete(): Promise<void> {
+		try {
+			fs.unlinkSync(this.filepath);
+			return Promise.resolve();
+		} catch (error) {
+			return Promise.reject(error);
+		}
+	}
 }
 
 export async function manageFileConfig(
