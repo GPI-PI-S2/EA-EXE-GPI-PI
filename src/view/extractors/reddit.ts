@@ -1,4 +1,5 @@
 import { backOrExit, extractorInfo, termmOrBackOrExit } from '@/helpers/input';
+import { getCurrentData } from '@/tools/File';
 import extractors from 'ea-core-gpi-pi';
 import { URL } from 'url';
 
@@ -14,6 +15,7 @@ function getParams(url: string): { subReddit: string; postId: string } {
 export default async (): Promise<void> => {
 	const reddit = extractors.get('reddit-extractor');
 	const back = true;
+	const { limit = 1000 } = await getCurrentData('root');
 	while (back) {
 		extractorInfo(reddit);
 		const url = await termmOrBackOrExit('Ingrese la url');
@@ -25,7 +27,7 @@ export default async (): Promise<void> => {
 			const result = await reddit.obtain({
 				postId,
 				subReddit,
-				limit: 1000,
+				limit,
 				metaKey: JSON.stringify({ subReddit, postId }),
 			});
 			result.data.result.forEach((r) => {

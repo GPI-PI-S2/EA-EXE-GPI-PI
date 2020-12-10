@@ -8,9 +8,14 @@ import {
 } from '@/helpers/input';
 import { getCurrentData, manageFileConfig } from '@/tools/File';
 import extractors from 'ea-core-gpi-pi';
-import { vPhone } from 'ea-common-gpi-pi';
+import { vNumber, vPhone } from 'ea-common-gpi-pi';
 
-const options: Option[] = [{ option: 'Número de teléfono', path: 'phone', validation: vPhone }];
+const options: Option[] = [
+	//{ option: 'Autenticación', path: 'auth'},
+	{ option: 'Número de teléfono', path: 'phone', validation: vPhone },
+	{ option: 'Api ID', path: 'apiId', validation: vNumber },
+	{ option: 'Api Hash', path: 'apiHash' },
+];
 
 export default async (): Promise<void> => {
 	let config: ExtractorConfig = await getCurrentData('telegram');
@@ -22,7 +27,7 @@ export default async (): Promise<void> => {
 		back = false;
 	}
 	while (back) {
-		const displayOptions = options.map(({ option, path }, i) => ({
+		const displayOptions = options.map(({ option, path }, i=1) => ({
 			N: i + 1,
 			Opción: option,
 			Valor: config[path],

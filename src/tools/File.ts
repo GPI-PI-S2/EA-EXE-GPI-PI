@@ -1,9 +1,12 @@
 import { isObject } from 'ea-common-gpi-pi';
 import { ConfigType, ExtractorConfig } from '@/helpers/input';
-import fs from 'fs';
+import fs, { ReadStream } from 'fs';
 export class File {
 	constructor(private filepath: string) {}
 	private rawContent: Buffer;
+	async get(): Promise<ReadStream> {
+		return fs.createReadStream(this.filepath);
+	}
 	async exist(): Promise<boolean> {
 		try {
 			const response = await fs.promises.readFile(this.filepath);
@@ -36,6 +39,14 @@ export class File {
 		if (isObject(content as Record<string, unknown>)) content = JSON.stringify(content);
 		await fs.promises.writeFile(this.filepath, content as string);
 		return;
+	}
+	async delete(): Promise<void> {
+		try {
+			fs.unlinkSync(this.filepath);
+			return Promise.resolve();
+		} catch (error) {
+			return Promise.reject(error);
+		}
 	}
 }
 
@@ -70,7 +81,8 @@ export async function getCurrentData(configType: ConfigType): Promise<ExtractorC
 	if (await file.exist()) {
 		const content = await file.read('object');
 		if (configType === 'root') return content as ExtractorConfig;
-		return content[configType] as ExtractorConfig;
+		if (configType in content) return content[configType] as ExtractorConfig;
+		return {} as ExtractorConfig;
 	}
 	return {} as ExtractorConfig;
 }

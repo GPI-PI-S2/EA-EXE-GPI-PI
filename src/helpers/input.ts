@@ -48,7 +48,15 @@ export type Option = {
 	validation?(options?: unknown): (option: string | number) => boolean | string;
 };
 
-export type ExtractorConfig = { [key: string]: unknown; limit?: number };
+export type ExtractorConfig = {
+	[key: string]: unknown;
+	limit?: number;
+	apiKey?: string;
+	bearerToken?: string;
+	phone?: string;
+	apiId?: number;
+	apiHash?: string;
+};
 export type Config = {
 	[key: string]: { [key: string]: unknown };
 	telegram?: ExtractorConfig;

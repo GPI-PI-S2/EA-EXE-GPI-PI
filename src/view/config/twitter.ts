@@ -9,7 +9,7 @@ import {
 import { getCurrentData, manageFileConfig } from '@/tools/File';
 import extractors from 'ea-core-gpi-pi';
 
-const options: Option[] = [];
+const options: Option[] = [{ option: 'Bearer Token', path: 'bearerToken' }];
 
 export default async (): Promise<void> => {
 	let config: ExtractorConfig = await getCurrentData('twitter');

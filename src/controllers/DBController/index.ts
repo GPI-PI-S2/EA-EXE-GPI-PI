@@ -1,3 +1,6 @@
+import { File, getCurrentData } from '@/tools/File';
+import axios from 'axios';
+import FormData from 'form-data';
 import { Anal, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
 import { Sentiments } from 'ea-core-gpi-pi/dist/Analyzer/Sentiments';
 import { Database, open } from 'sqlite';
@@ -158,12 +161,38 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 			}
 		}
 	}
-	/**
-	 * @deprecated Esta función no está disponible en el modo ejecutable
-	 */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async bulkDB(_dbPath: string): Promise<DBController.bulkDBResult> {
+
+	async bulkDB(dbPath: string): Promise<DBController.bulkDBResult> {
 		if (!this.db) throw new Error('no db instance');
-		return;
+		const config = await getCurrentData('root');
+		if (!config.email) {
+			throw new Error('Debe ingresar su correo en configuraciones');
+		}
+		const file = new File(dbPath);
+		const dbExists = await file.exist();
+		if (!dbExists) throw new Error('No existe base de datos local');
+		const db = await file.get();
+		const formData = new FormData();
+		formData.append('db', db);
+		let data: DBController.bulkDBResult = null;
+		try {
+			const { data: result } = await axios.post(
+				'https://www.gpi.valdomero.live/dbcontroller/v1/bulk',
+				formData,
+				{
+					params: { by: config.email },
+					headers: {
+						'X-API-KEY': 'prendalacamara',
+						...formData.getHeaders(),
+					},
+				},
+			);
+			data = result;
+			await file.delete();
+		} catch (error) {
+			console.error(error.response.data);
+			throw new Error(error);
+		}
+		return data as DBController.bulkDBResult;
 	}
 }
