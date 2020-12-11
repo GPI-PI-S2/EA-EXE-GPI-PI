@@ -54,8 +54,6 @@ export type ExtractorConfig = {
 	apiKey?: string;
 	bearerToken?: string;
 	phone?: string;
-	apiId?: number;
-	apiHash?: string;
 };
 export type Config = {
 	[key: string]: { [key: string]: unknown };
@@ -67,6 +65,53 @@ export type Config = {
 };
 
 export type ConfigType = 'telegram' | 'emol' | 'youtube' | 'reddit' | 'twitter' | 'root';
+
+export type SentimentList = {
+	[key: string] : number;
+	asertividad : number;
+	autoconciencia_emocional : number;
+	autoestima : number;
+	desarrollar_y_estimular_a_los_demas : number;
+	empatia : number;
+	autocontrol_emocional : number;
+	influencia : number;
+	liderazgo : number;
+	optimismo : number;
+	relacion_social : number;
+	colaboracion_y_cooperacion : number;
+	comprension_organizativa : number;
+	conciencia_critica : number;
+	desarrollo_de_las_relaciones : number;
+	tolerancia_a_la_frustracion : number;
+	comunicacion_asertiva : number;
+	manejo_de_conflictos : number;
+	motivacion_de_logro : number;
+	percepcion_y_comprension_emocional : number;
+	violencia : number;
+
+}
+
+export type SentimentType = 
+'asertividad' | 
+'autoconciencia_emocional' | 
+'autoestima' | 
+'desarrollar_y_estimular_a_los_demas' | 
+'empatia' | 
+'autocontrol_emocional' | 
+'influencia' | 
+'liderazgo' | 
+'optimismo' | 
+'relacion_social' | 
+'colaboracion_y_cooperacion' | 
+'comprension_organizativa' | 
+'conciencia_critica' | 
+'desarrollo_de_las_relaciones' | 
+'tolerancia_a_la_frustracion' | 
+'comunicacion_asertiva' | 
+'manejo_de_conflictos' | 
+'motivacion_de_logro' | 
+'percepcion_y_comprension_emocional' | 
+'violencia';
 
 export async function askAndSaveOption(
 	index: number,
