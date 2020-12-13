@@ -1,8 +1,8 @@
 import { File, getCurrentData } from '@/tools/File';
 import axios from 'axios';
-import FormData from 'form-data';
 import { Anal, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
-import { Sentiments } from 'ea-core-gpi-pi/dist/Analyzer/Sentiments';
+import { Sentiments } from 'ea-ieom2-gpi-pi/dist/Sentiments';
+import FormData from 'form-data';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { container } from 'tsyringe';
