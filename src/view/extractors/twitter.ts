@@ -7,31 +7,54 @@ import {
 	termmOrBackOrExit,
 } from '@/helpers/input';
 import { getCurrentData } from '@/tools/File';
+import { arrayValidation, vMax, vNoWhitespaces, vRequired } from 'ea-common-gpi-pi';
 import extractors from 'ea-core-gpi-pi';
-
+let cError = '';
+const nav = `
+╔══════════════════════════════╗
+║ Main > Extractores > Twitter ║
+╚══════════════════════════════╝`;
+function verify(input: string): string | true {
+	try {
+		const primaryV = arrayValidation(input, [vRequired(), vMax(30), vNoWhitespaces()]);
+		if (typeof primaryV === 'string') return primaryV;
+		return true;
+	} catch (error) {
+		return 'Input inválido';
+	}
+}
 export default async (): Promise<void> => {
 	const twitter = extractors.get('twitter-extractor');
 	let back = true;
 	const { limit = 1000 }: ExtractorConfig = await getCurrentData('root');
 	const config: ExtractorConfig = await getCurrentData('twitter');
 	const bearerToken = config?.bearerToken;
-	if (!bearerToken) {
-		back = false;
-		await termmOrBackOrExit('Debe configurar Bearer Token primero');
-	}
-	// const bearerToken = 'AAAAAAAAAAAAAAAAAAAAAJewJQEAAAAAPOlJ%2BAGXOMiIAG7dDUUtTaFAOgs%3DKLpEMQCsq33R2kwwnADok1ujE9v65o4eSf34m5b4yupPvGCi40';
-
 	while (back) {
+		console.clear();
+		console.log(nav);
 		extractorInfo(twitter);
-		const hashtag = await termmOrBackOrExit('Ingrese el término de búsqueda');
-		if (hashtag === 0) return;
-
 		try {
+			if (cError) {
+				console.log('❌' + cError + '\n');
+				cError = '';
+			}
+			if (!bearerToken) {
+				back = false;
+				await termmOrBackOrExit('Debe configurar Bearer Token primero');
+				return;
+			}
+			// const bearerToken = 'AAAAAAAAAAAAAAAAAAAAAJewJQEAAAAAPOlJ%2BAGXOMiIAG7dDUUtTaFAOgs%3DKLpEMQCsq33R2kwwnADok1ujE9v65o4eSf34m5b4yupPvGCi40';
+			const searchTerm = await termmOrBackOrExit('Ingrese el término de búsqueda');
+			if (searchTerm === 0) return;
+			const validInput = verify(searchTerm);
+			if (typeof validInput === 'string') throw new Error(validInput);
 			console.clear();
+			console.log(nav + '\n');
+			console.log('- Obteniendo comentarios...\n');
 			await twitter.deploy({ bearerToken });
 			const result = await twitter.obtain({
 				limit,
-				metaKey: hashtag,
+				metaKey: searchTerm,
 			});
 
 			let n_inputs = 0;
@@ -91,9 +114,9 @@ export default async (): Promise<void> => {
 					input['sentiments']['percepción y comprensión emocional'];
 				prom_sentiments['violencia'] += input['sentiments']['violencia'];
 			});
-
 			console.clear();
-			console.log(`Resumen Análisis`);
+			console.log(nav + '\n');
+			console.log(`Resumen Análisis\n`);
 			const displaySentiments = [];
 			let i = 0;
 			for (const prop in prom_sentiments) {
@@ -107,7 +130,7 @@ export default async (): Promise<void> => {
 				i++;
 			}
 			selectableList(displaySentiments);
-			console.log(`Total de comentarios analizados: ${n_inputs}`);
+			console.log(`\nTotal de comentarios analizados: ${n_inputs}\n`);
 
 			const nextAction = await backOrExit();
 			if (nextAction === 0) return;

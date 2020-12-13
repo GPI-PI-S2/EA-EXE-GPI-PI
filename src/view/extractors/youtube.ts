@@ -28,6 +28,10 @@ export default async (): Promise<void> => {
 	// const apiKey = 'AIzaSyCbh7V9N99YuffN2s8xeu7MmfYS4l2I180';
 
 	while (back) {
+		console.log(`
+╔══════════════════════════════╗
+║ Main > Extractores > Youtube ║
+╚══════════════════════════════╝`);
 		extractorInfo(youtube);
 		const urlVideo = await termmOrBackOrExit('Ingrese la url del video');
 		if (urlVideo === 0) return;

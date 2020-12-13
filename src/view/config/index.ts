@@ -1,11 +1,11 @@
 import { selectableList, termmOrBackOrExit } from '@/helpers/input';
 import extractors from 'ea-core-gpi-pi';
 import emolConfig from './emol';
+import globalConfig from './global';
 import redditConfig from './reddit';
 import telegramConfig from './telegram';
 import twitterConfig from './twitter';
 import youtubeConfig from './youtube';
-import globalConfig from './global';
 
 export default async (): Promise<void> => {
 	const displayExtractors = extractors.availables.map((extractor, index) => ({
@@ -25,6 +25,11 @@ export default async (): Promise<void> => {
 		let extractorId = '';
 		while (!extractorId) {
 			console.clear();
+			console.log(`
+╔══════════════════════╗
+║ Main > Configuración ║ 
+╚══════════════════════╝
+`);
 			console.log('Selecciona un extractor:\n');
 			selectableList(displayExtractors);
 			const index = await termmOrBackOrExit('Ingrese el identificador ');

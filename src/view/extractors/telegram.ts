@@ -11,44 +11,79 @@ import extractors from 'ea-core-gpi-pi';
 import { Response } from 'ea-core-gpi-pi/dist/services/Extractor/Response';
 import { Telegram } from 'ea-core-gpi-pi/dist/services/Telegram';
 import { getCurrentData } from '../../tools/File';
-
+let cError = '';
+const nav = `
+╔═══════════════════════════════╗
+║ Main > Extractores > Telegram ║
+╚═══════════════════════════════╝`;
 async function login(extractor: Telegram, phone: string, apiId: number, apiHash: string) {
 	let code = NaN;
 	let codeHash = '';
+	let cError = '';
 	let response = await extractor.deploy({ apiId, apiHash }, { phone });
 	if (response.status === Response.Status.PENDING) {
 		const pendingResponse = response.data as Telegram.Deploy.PendingResponse;
 		codeHash = pendingResponse.codeHash;
 		while (isNaN(code) || code === null) {
+			console.clear();
+			console.log(nav + '\n');
+			if (cError) {
+				console.log('❌' + cError + '\n');
+				cError = '';
+			}
 			const iCode = await termmOrBackOrExit('Ingrese el código de verificación');
 			if (iCode === 0) return;
 			const intCode = parseInt(iCode);
 			const valid = iCode.length > 4 && !isNaN(intCode);
 			if (!valid) {
-				console.log('Error: Código inválido');
+				cError = 'Código inválido';
 				continue;
 			}
 			code = intCode;
 			response = await extractor.deploy({ apiId, apiHash }, { phone, code, codeHash });
 			if (response.status === Response.Status.OK) code = intCode;
-			else console.log('Error: Codigo Invalido');
+			else {
+				cError = 'Código inválido';
+				continue;
+			}
 		}
-	} else if (response.status === Response.Status.ERROR) throw new Error("can't continue");
+	} else if (response.status === Response.Status.ERROR)
+		throw new Error('Problemas, no se puede continuar');
 	return response.data as Telegram.Deploy.Response;
 }
 
 async function selectChat(chats: Telegram.Deploy.chat[]) {
-	console.info('\nChats\n');
-	chats.forEach((chat, index) => console.log(` [${index + 1}]  (${chat.type}) - ${chat.name}`));
+	console.clear();
+	console.log(nav + '\n');
+	console.info('Chats\n');
+	let cError = '';
+	const selectablesChats = chats.map((chat, i) => ({
+		N: i + 1,
+		Tipo: chat.type,
+		Nombre: chat.name,
+	}));
+	//chats.forEach((chat, index) => console.log(` [${index + 1}]  (${chat.type}) - ${chat.name}`));
 	const min = 1;
 	const max = chats.length;
 	let selected = '';
 	while (!selected) {
+		console.clear();
+		console.log(nav + '\n');
+		console.info('Chats\n');
+		selectableList(selectablesChats);
+		console.log('\n');
+		if (cError) {
+			console.log('❌' + cError + '\n');
+			cError = '';
+		}
 		const userResponse = await termmOrBackOrExit('Seleccione el n° del chat');
 		if (userResponse === 0) return;
 		const valid = vRangeBetween(min, max)(userResponse);
 		if (typeof valid === 'boolean') selected = userResponse;
-		else console.debug('Error: selectChat', { valid });
+		else {
+			cError = valid;
+			continue;
+		}
 	}
 	return chats[Number(selected) - 1];
 }
@@ -59,33 +94,42 @@ export default async (): Promise<void> => {
 	const { limit = 1000 }: ExtractorConfig = await getCurrentData('root');
 	const config: ExtractorConfig = await getCurrentData('telegram');
 	const phone = config?.phone;
-	if (!phone) {
-		back = false;
-		await termmOrBackOrExit('Debe configurar el teléfono primero');
-	}
-	const apiId = 1862196;
-	// const apiId = config?.apiId;
-	if (!apiId) {
-		back = false;
-		await termmOrBackOrExit('Debe configurar el Api ID primero');
-	}
-
-	const apiHash = 'ecf4f984d701a3ee7a909d0c505d2df5';
-	// const apiHash = config?.apiHash;
-	if (!apiHash) {
-		back = false;
-		await termmOrBackOrExit('Debe configurar Api Hash primero');
-	}
 
 	while (back) {
+		console.clear();
+		console.log(nav);
 		extractorInfo(telegram);
 		try {
+			if (cError) {
+				console.log('❌' + cError + '\n');
+				cError = '';
+			}
+			if (!phone) {
+				back = false;
+				await termmOrBackOrExit('Debe configurar el teléfono primero');
+			}
+			const apiId = 1862196;
+			// const apiId = config?.apiId;
+			if (!apiId) {
+				back = false;
+				await termmOrBackOrExit('Debe configurar el Api ID primero');
+			}
+
+			const apiHash = 'ecf4f984d701a3ee7a909d0c505d2df5';
+			// const apiHash = config?.apiHash;
+			if (!apiHash) {
+				back = false;
+				await termmOrBackOrExit('Debe configurar Api Hash primero');
+			}
 			const loginResponse = await login(telegram, phone, apiId, apiHash);
 			const selectedChat = await selectChat(loginResponse.chats);
 			if (!selectedChat) {
 				back = false;
 			}
 			const { accessHash, id, type } = selectedChat;
+			console.clear();
+			console.log(nav + '\n');
+			console.log('- Obteniendo comentarios...\n');
 			const result = await telegram.obtain({
 				accessHash,
 				type,
@@ -152,9 +196,9 @@ export default async (): Promise<void> => {
 					input['sentiments']['percepción y comprensión emocional'];
 				prom_sentiments['violencia'] += input['sentiments']['violencia'];
 			});
-
 			console.clear();
-			console.log(`Resumen Análisis`);
+			console.log(nav + '\n');
+			console.log(`Resumen Análisis\n`);
 			const displaySentiments = [];
 			let i = 0;
 			for (const prop in prom_sentiments) {
@@ -168,12 +212,12 @@ export default async (): Promise<void> => {
 				i++;
 			}
 			selectableList(displaySentiments);
-			console.log(`Total de comentarios analizados: ${n_inputs}`);
-
+			console.log(`\nTotal de comentarios analizados: ${n_inputs}\n`);
 			const nextAction = await backOrExit();
 			if (nextAction === 0) return;
 		} catch (error) {
-			console.log(error);
+			const message = error.message ? error.message : 'Se ha producido un error';
+			cError = message;
 			continue;
 		}
 		console.clear();

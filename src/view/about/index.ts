@@ -10,7 +10,14 @@ export default async (): Promise<void> => {
 	const back = true;
 	while (back) {
 		try {
+			console.clear();
+			console.log(`
+╔═════════════════════╗
+║ Main > Sobre la app ║ 
+╚═════════════════════╝
+`);
 			console.table(aboutUs);
+			console.log('\n');
 			const nextAction = await backOrExit();
 			if (nextAction === 0) return;
 		} catch (error) {

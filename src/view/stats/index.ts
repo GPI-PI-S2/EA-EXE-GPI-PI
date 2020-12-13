@@ -6,15 +6,21 @@ export default async (): Promise<void> => {
 	while (back) {
 		try {
 			console.clear();
-			const formattedStats: { [key: string]: { comments: number } } = {};
+			console.log(`
+╔══════════════╗
+║ Main > Stats ║ 
+╚══════════════╝
+`);
 			const DBController = container.resolve<ExeDBController>('DBController');
 			await DBController.connect();
 			const stats = await DBController.stats();
-			Object.entries(stats).map(([extractorId, comments]) => {
-				formattedStats[extractorId] = { comments };
-			});
-			console.table(formattedStats);
-			await DBController.disconnect();
+			if (Object.entries(stats).length == 0) {
+				console.log('No hay registros disponibles\n');
+			} else {
+				console.table(stats);
+				await DBController.disconnect();
+			}
+
 			const nextAction = await backOrExit();
 			if (nextAction === 0) return;
 		} catch (error) {

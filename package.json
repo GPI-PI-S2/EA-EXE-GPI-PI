@@ -7,6 +7,7 @@
 		"lint": "eslint . --ext .ts",
 		"serve-db": "npm run lint && tsnd --respawn ./serve",
 		"serve": "npm run lint && cross-env LEVEL=info tsnd --respawn -r tsconfig-paths/register ./src/app.ts",
+		"serve-single": "npm run lint && cross-env LEVEL=info tsnd -r tsconfig-paths/register ./src/app.ts",
 		"prepare": "npm run lint && cross-env LEVEL=info && tsc -p ./tsconfig.json",
 		"transpile": "npm run prepare && babel dist -d dist",
 		"build": "npm run transpile && pkg . --out-path bin",

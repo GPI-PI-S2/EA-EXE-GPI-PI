@@ -6,18 +6,44 @@ import {
 	termmOrBackOrExit,
 } from '@/helpers/input';
 import { getCurrentData } from '@/tools/File';
+import { arrayValidation, vRequired, vUrl } from 'ea-common-gpi-pi';
 import extractors from 'ea-core-gpi-pi';
-
+import { URL } from 'url';
+let cError = '';
+const nav = `
+╔═════════════════════════════╗
+║ Main > Extractores > Reddit ║
+╚═════════════════════════════╝`;
+function verify(input: string): string | true {
+	try {
+		const primaryV = arrayValidation(input, [vRequired(), vUrl()]);
+		if (typeof primaryV === 'string') return primaryV;
+		const url = new URL(input);
+		if (!url.origin.includes('emol.com')) return 'La URL no pertenece a EMOL';
+	} catch (error) {
+		return 'Input inválido';
+	}
+}
 export default async (): Promise<void> => {
 	const emol = extractors.get('emol-extractor');
 	const back = true;
 	const { limit = 1000 } = await getCurrentData('root');
 	while (back) {
+		console.clear();
+		console.log(nav);
 		extractorInfo(emol);
-		const url = await termmOrBackOrExit('Ingrese la URL de la noticia');
-		if (url === 0) return;
 		try {
+			if (cError) {
+				console.log('❌' + cError + '\n');
+				cError = '';
+			}
+			const url = await termmOrBackOrExit('Ingrese la URL de la noticia');
+			if (url === 0) return;
+			const validInput = verify(url);
+			if (typeof validInput === 'string') throw new Error(validInput);
 			console.clear();
+			console.log(nav + '\n');
+			console.log('- Obteniendo comentarios...');
 			await emol.deploy();
 			const result = await emol.obtain({
 				limit,
@@ -80,9 +106,9 @@ export default async (): Promise<void> => {
 					input['sentiments']['percepción y comprensión emocional'];
 				prom_sentiments['violencia'] += input['sentiments']['violencia'];
 			});
-
 			console.clear();
-			console.log(`Resumen Análisis`);
+			console.log(nav + '\n');
+			console.log(`Resumen Análisis\n`);
 			const displaySentiments = [];
 			let i = 0;
 			for (const prop in prom_sentiments) {
@@ -96,12 +122,13 @@ export default async (): Promise<void> => {
 				i++;
 			}
 			selectableList(displaySentiments);
-			console.log(`Total de comentarios analizados: ${n_inputs}`);
+			console.log(`\nTotal de comentarios analizados: ${n_inputs}\n`);
 
 			const nextAction = await backOrExit();
 			if (nextAction === 0) return;
 		} catch (error) {
-			console.log(error);
+			const message = error.message ? error.message : 'Se ha producido un error';
+			cError = message;
 			continue;
 		}
 		console.clear();
