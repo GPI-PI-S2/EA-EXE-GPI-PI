@@ -1,12 +1,11 @@
+import { ConfigFile } from '@/controllers/ConfigFile';
 import {
 	backOrExit,
-	ExtractorConfig,
 	extractorInfo,
 	selectableList,
 	SentimentList,
 	termmOrBackOrExit,
 } from '@/helpers/input';
-import { getCurrentData } from '@/tools/File';
 import { arrayValidation, vMax, vNoWhitespaces, vRequired } from 'ea-common-gpi-pi';
 import extractors from 'ea-core-gpi-pi';
 let cError = '';
@@ -26,9 +25,7 @@ function verify(input: string): string | true {
 export default async (): Promise<void> => {
 	const twitter = extractors.get('twitter-extractor');
 	let back = true;
-	const { limit = 1000 }: ExtractorConfig = await getCurrentData('root');
-	const config: ExtractorConfig = await getCurrentData('twitter');
-	const bearerToken = config?.bearerToken;
+	const { bearerToken, limit } = await ConfigFile.get();
 	while (back) {
 		console.clear();
 		console.log(nav);

@@ -1,85 +1,137 @@
+import { ConfigFile } from '@/controllers/ConfigFile';
 import { selectableList, termmOrBackOrExit } from '@/helpers/input';
-import extractors from 'ea-core-gpi-pi';
-import emolConfig from './emol';
-import globalConfig from './global';
-import redditConfig from './reddit';
-import telegramConfig from './telegram';
-import twitterConfig from './twitter';
-import youtubeConfig from './youtube';
-
-export default async (): Promise<void> => {
-	const displayExtractors = extractors.availables.map((extractor, index) => ({
-		N: index + 1,
-		id: extractor.id,
-		version: extractor.version,
-		name: extractor.name,
-	}));
-	displayExtractors.push({
-		N: displayExtractors.length + 1,
-		name: 'Configuración global',
-		id: 'global',
-		version: '-',
-	});
-	const exit = false;
-	while (!exit) {
-		let extractorId = '';
-		while (!extractorId) {
-			console.clear();
-			console.log(`
+import {
+	arrayValidation,
+	vEmail,
+	vMax,
+	vNumber,
+	vPhone,
+	vRangeBetween,
+	vRequired,
+} from 'ea-common-gpi-pi';
+let cError = '';
+const navEmail = `
+╔═══════════════════════════════════════════╗
+║ Main > Configuración > Correo electrónico ║ 
+╚═══════════════════════════════════════════╝
+`;
+const navPhone = `
+╔═════════════════════════════════╗
+║ Main > Configuración > Teléfono ║ 
+╚═════════════════════════════════╝
+`;
+const navLimit = `
+╔═════════════════════════════════════════════╗
+║ Main > Configuración > Tamaño de la muestra ║ 
+╚═════════════════════════════════════════════╝
+`;
+const navBearer = `
+╔═════════════════════════════════════════════╗
+║ Main > Configuración > Twitter Bearer Token ║ 
+╚═════════════════════════════════════════════╝
+`;
+const navApiKey = `
+╔════════════════════════════════════════╗
+║ Main > Configuración > Youtube Api Key ║ 
+╚════════════════════════════════════════╝
+`;
+const nav = `
 ╔══════════════════════╗
 ║ Main > Configuración ║ 
 ╚══════════════════════╝
-`);
-			console.log('Selecciona un extractor:\n');
-			selectableList(displayExtractors);
+`;
+export default async (): Promise<void> => {
+	const exit = false;
+
+	while (!exit) {
+		console.clear();
+		console.log(nav);
+
+		const { apiKey, email, phone, bearerToken, limit } = await ConfigFile.get();
+		const optionsValues = [email, phone, limit, bearerToken, apiKey];
+		const options = [
+			'Correo electrónico',
+			'Teléfono',
+			'Tamaño máximo de muestra',
+			'Twitter bearer token',
+			'Youtube Api key',
+		].map((v, i) => ({
+			N: i + 1,
+			Opción: v,
+			Valor: optionsValues[i] ? optionsValues[i] : 'No establecido',
+		}));
+		try {
+			selectableList(options);
+			if (cError) {
+				console.log('\n❌' + cError + '\n');
+				cError = '';
+			}
 			const index = await termmOrBackOrExit('Ingrese el identificador ');
 			if (index === 0) return;
-			const e = extractors.availables[Number(index) - 1];
-			const selectedOption = displayExtractors[Number(index) - 1];
-			const isConfig = selectedOption && selectedOption.id === 'global';
-			if (e || isConfig) {
-				if (isConfig) extractorId = selectedOption.id;
-				else extractorId = e.id;
+			switch (index) {
+				case '1': {
+					console.clear();
+					console.log(navEmail);
+					const email = await termmOrBackOrExit('Ingrese el correo electrónico');
+					if (email === 0) return;
+					const valid = arrayValidation(email, [vRequired(), vEmail()]);
+					if (typeof valid === 'string') throw new Error(valid);
+					await ConfigFile.set('email', email);
+					break;
+				}
+				case '2': {
+					console.clear();
+					console.log(navPhone);
+					const phone = await termmOrBackOrExit('Ingrese el número de teléfono');
+					if (phone === 0) return;
+					const valid = arrayValidation(phone, [vRequired(), vPhone()]);
+					if (typeof valid === 'string') throw new Error(valid);
+					await ConfigFile.set('phone', phone);
+					break;
+				}
+				case '3': {
+					console.clear();
+					console.log(navLimit);
+					const limit = await termmOrBackOrExit(
+						'Ingrese el tamaño máximo de la muestra ',
+					);
+					if (limit === 0) return;
+					const valid = arrayValidation(limit, [
+						vRequired(),
+						vNumber(),
+						vRangeBetween(1, 1000),
+					]);
+					if (typeof valid === 'string') throw new Error(valid);
+					await ConfigFile.set('limit', Number(limit));
+					break;
+				}
+				case '4': {
+					console.clear();
+					console.log(navBearer);
+					const bearerToken = await termmOrBackOrExit(
+						'Ingrese el bearer token de Twitter',
+					);
+					if (bearerToken === 0) return;
+					const valid = arrayValidation(bearerToken, [vRequired(), vMax(250)]);
+					if (typeof valid === 'string') throw new Error(valid);
+					await ConfigFile.set('bearerToken', bearerToken);
+					break;
+				}
+				case '5': {
+					console.clear();
+					console.log(navApiKey);
+					const apiKey = await termmOrBackOrExit('Ingrese la api key de youtube ');
+					if (apiKey === 0) return;
+					const valid = arrayValidation(apiKey, [vRequired(), vMax(250)]);
+					if (typeof valid === 'string') throw new Error(valid);
+					await ConfigFile.set('apiKey', apiKey);
+					break;
+				}
 			}
+		} catch (error) {
+			const message = error.message ? error.message : 'Se ha producido un error';
+			cError = message;
+			continue;
 		}
-		console.clear();
-		switch (extractorId) {
-			case 'telegram-extractor': {
-				await telegramConfig();
-				break;
-			}
-			case 'youtube-extractor': {
-				await youtubeConfig();
-				break;
-			}
-			case 'reddit-extractor': {
-				await redditConfig();
-				break;
-			}
-			case 'emol-extractor': {
-				await emolConfig();
-				break;
-			}
-			case 'twitter-extractor': {
-				await twitterConfig();
-				break;
-			}
-			case 'global': {
-				await globalConfig();
-				break;
-			}
-			default: {
-				throw new Error('Configuración no disponible');
-			}
-		}
-		console.log('Finished');
 	}
-
-	return process.exit(0);
-
-	/* 	// Ejemplo de comandos por terminal;
-	if (program.debug) console.log(program.opts());
-	console.log('pizza details:');
-	if (program.small) console.log('- small pizza size');
-	if (program.pizzaType) console.log(`- ${program.pizzaType}`); */
 };

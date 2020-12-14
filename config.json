@@ -1,1 +1,7 @@
-{"telegram":{"phone":"+56951373045"},"twitter":{"bearerToken":"AAAAAAAAAAAAAAAAAAAAAJewJQEAAAAAPOlJ%2BAGXOMiIAG7dDUUtTaFAOgs%3DKLpEMQCsq33R2kwwnADok1ujE9v65o4eSf34m5b4yupPvGCi40"}}
+{
+	"apiKey": "AIzaSyCbh7V9N99YuffN2s8xeu7MmfYS4l2I180",
+	"bearerToken": "AAAAAAAAAAAAAAAAAAAAAJewJQEAAAAAPOlJ%2BAGXOMiIAG7dDUUtTaFAOgs%3DKLpEMQCsq33R2kwwnADok1ujE9v65o4eSf34m5b4yupPvGCi40",
+	"limit": 1000,
+	"phone": "",
+	"email": "daniel.fredesl@utem.cl"
+}

@@ -1,18 +1,24 @@
 import { selectableList, termmOrBackOrExit } from '@/helpers/input';
 import aboutUsView from './about';
 import bulkView from './bulk';
+import bulkExtractors from './bulkExtractors';
 import configViews from './config';
 import extractorsViews from './extractors';
 import statsViews from './stats';
 
 export default async (): Promise<void> => {
 	const exit = false;
-	const options = ['Extractores', 'Stats', 'Configuración', 'Sobre la app', 'Subir DB'].map(
-		(v, i) => ({
-			N: i + 1,
-			Opción: v,
-		}),
-	);
+	const options = [
+		'Extractores',
+		'Extractores bulk',
+		'Stats',
+		'Subir DB',
+		'Sobre la app',
+		'Configuración',
+	].map((v, i) => ({
+		N: i + 1,
+		Opción: v,
+	}));
 	while (!exit) {
 		console.clear();
 		console.log(`
@@ -31,19 +37,23 @@ export default async (): Promise<void> => {
 				break;
 			}
 			case '2': {
-				await statsViews();
+				await bulkExtractors();
 				break;
 			}
 			case '3': {
-				await configViews();
+				await statsViews();
 				break;
 			}
 			case '4': {
-				await aboutUsView();
+				await bulkView();
 				break;
 			}
 			case '5': {
-				await bulkView();
+				await aboutUsView();
+				break;
+			}
+			case '6': {
+				await configViews();
 				break;
 			}
 		}

@@ -1,6 +1,6 @@
+import { ConfigFile } from '@/controllers/ConfigFile';
 import {
 	backOrExit,
-	ExtractorConfig,
 	extractorInfo,
 	selectableList,
 	SentimentList,
@@ -10,7 +10,6 @@ import { vRangeBetween } from 'ea-common-gpi-pi';
 import extractors from 'ea-core-gpi-pi';
 import { Response } from 'ea-core-gpi-pi/dist/services/Extractor/Response';
 import { Telegram } from 'ea-core-gpi-pi/dist/services/Telegram';
-import { getCurrentData } from '../../tools/File';
 let cError = '';
 const nav = `
 ╔═══════════════════════════════╗
@@ -91,10 +90,7 @@ async function selectChat(chats: Telegram.Deploy.chat[]) {
 export default async (): Promise<void> => {
 	const telegram = extractors.get('telegram-extractor');
 	let back = true;
-	const { limit = 1000 }: ExtractorConfig = await getCurrentData('root');
-	const config: ExtractorConfig = await getCurrentData('telegram');
-	const phone = config?.phone;
-
+	const { limit, phone } = await ConfigFile.get();
 	while (back) {
 		console.clear();
 		console.log(nav);

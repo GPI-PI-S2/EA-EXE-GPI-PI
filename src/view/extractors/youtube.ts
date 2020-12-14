@@ -1,45 +1,65 @@
+import { ConfigFile } from '@/controllers/ConfigFile';
 import {
 	backOrExit,
-	ExtractorConfig,
 	extractorInfo,
 	selectableList,
 	SentimentList,
 	termmOrBackOrExit,
 } from '@/helpers/input';
-import { getCurrentData } from '@/tools/File';
+import { arrayValidation, vRequired, vUrl } from 'ea-common-gpi-pi';
 import extractors from 'ea-core-gpi-pi';
 import { URL } from 'url';
-
-async function getVideoId(url: string) {
+let cError = '';
+const nav = `
+╔══════════════════════════════╗
+║ Main > Extractores > Youtube ║
+╚══════════════════════════════╝`;
+function getId(url: string): string {
 	const cURL = new URL(url);
 	return cURL.searchParams.get('v');
+}
+function verify(input: string): string | true {
+	try {
+		const primaryV = arrayValidation(input, [vRequired(), vUrl()]);
+		if (typeof primaryV === 'string') return primaryV;
+		const cURL = new URL(input);
+		const id = cURL.searchParams.get('v');
+		if (!id) return 'id de video inválida';
+		else return true;
+	} catch (error) {
+		return 'Input inválido';
+	}
 }
 
 export default async (): Promise<void> => {
 	const youtube = extractors.get('youtube-extractor');
 	let back = true;
-	const { limit = 1000 }: ExtractorConfig = await getCurrentData('root');
-	const config: ExtractorConfig = await getCurrentData('youtube');
-	const apiKey = config?.apiKey;
-	if (!apiKey) {
-		back = false;
-		await termmOrBackOrExit('Debe configurar API KEY primero');
-	}
-	// const apiKey = 'AIzaSyCbh7V9N99YuffN2s8xeu7MmfYS4l2I180';
-
+	const { apiKey, limit } = await ConfigFile.get();
 	while (back) {
-		console.log(`
-╔══════════════════════════════╗
-║ Main > Extractores > Youtube ║
-╚══════════════════════════════╝`);
+		console.clear();
+		console.log(nav);
 		extractorInfo(youtube);
-		const urlVideo = await termmOrBackOrExit('Ingrese la url del video');
-		if (urlVideo === 0) return;
-		const videoId = await getVideoId(urlVideo);
-		if (!videoId) return;
-
 		try {
+			if (cError) {
+				console.log('❌' + cError + '\n');
+				cError = '';
+			}
+			if (!apiKey) {
+				back = false;
+				await termmOrBackOrExit('Debe configurar la api key primero');
+				return;
+			}
+			// const apiKey = 'AIzaSyCbh7V9N99YuffN2s8xeu7MmfYS4l2I180';
+			const urlVideo = await termmOrBackOrExit('Ingrese la url del video');
+			if (urlVideo === 0) return;
+			const validInput = verify(urlVideo);
+			if (typeof validInput === 'string') throw new Error(validInput);
+			const videoId = getId(urlVideo);
+			if (!videoId) throw new Error('id de video inválido');
 			console.clear();
+			console.log(nav + '\n');
+			console.log('- Obteniendo comentarios...\n');
+
 			await youtube.deploy({ apiKey });
 			const result = await youtube.obtain({
 				metaKey: videoId,
@@ -104,7 +124,8 @@ export default async (): Promise<void> => {
 			});
 
 			console.clear();
-			console.log(`Resumen Análisis`);
+			console.log(nav + '\n');
+			console.log(`Resumen Análisis\n`);
 			const displaySentiments = [];
 			let i = 0;
 			for (const prop in prom_sentiments) {
@@ -118,12 +139,13 @@ export default async (): Promise<void> => {
 				i++;
 			}
 			selectableList(displaySentiments);
-			console.log(`Total de comentarios analizados: ${n_inputs}`);
+			console.log(`\nTotal de comentarios analizados: ${n_inputs}\n`);
 
 			const nextAction = await backOrExit();
 			if (nextAction === 0) return;
 		} catch (error) {
-			console.log(error);
+			const message = error.message ? error.message : 'Se ha producido un error';
+			cError = message;
 			continue;
 		}
 		console.clear();

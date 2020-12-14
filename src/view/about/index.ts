@@ -4,7 +4,7 @@ const aboutUs = {
 	Proyecto: { descripción: 'Análisis de "Factor emocional"s en redes sociales' },
 	Ramo: { descripción: 'Gestión de Proyectos Informáticos' },
 	Semestre: { descripción: '2do semestres 2020' },
-	'Profesor guía': { descripción: 'Doctor Oscar Magna' },
+	Docente: { descripción: 'Dr Oscar Magna' },
 };
 export default async (): Promise<void> => {
 	const back = true;
@@ -20,9 +20,9 @@ export default async (): Promise<void> => {
 			console.log('\n');
 			const nextAction = await backOrExit();
 			if (nextAction === 0) return;
+			return;
 		} catch (error) {
 			continue;
 		}
-		console.clear();
 	}
 };

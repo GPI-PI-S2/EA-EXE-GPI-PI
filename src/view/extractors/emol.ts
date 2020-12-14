@@ -1,3 +1,4 @@
+import { ConfigFile } from '@/controllers/ConfigFile';
 import {
 	backOrExit,
 	extractorInfo,
@@ -5,7 +6,6 @@ import {
 	SentimentList,
 	termmOrBackOrExit,
 } from '@/helpers/input';
-import { getCurrentData } from '@/tools/File';
 import { arrayValidation, vRequired, vUrl } from 'ea-common-gpi-pi';
 import extractors from 'ea-core-gpi-pi';
 import { URL } from 'url';
@@ -20,6 +20,7 @@ function verify(input: string): string | true {
 		if (typeof primaryV === 'string') return primaryV;
 		const url = new URL(input);
 		if (!url.origin.includes('emol.com')) return 'La URL no pertenece a EMOL';
+		else return true;
 	} catch (error) {
 		return 'Input inválido';
 	}
@@ -27,7 +28,7 @@ function verify(input: string): string | true {
 export default async (): Promise<void> => {
 	const emol = extractors.get('emol-extractor');
 	const back = true;
-	const { limit = 1000 } = await getCurrentData('root');
+	const { limit } = await ConfigFile.get();
 	while (back) {
 		console.clear();
 		console.log(nav);

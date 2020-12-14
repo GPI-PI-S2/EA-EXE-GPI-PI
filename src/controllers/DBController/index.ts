@@ -1,4 +1,4 @@
-import { File, getCurrentData } from '@/tools/File';
+import { File } from '@/tools/File';
 import axios from 'axios';
 import { Anal, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
 import { Sentiments } from 'ea-ieom2-gpi-pi/dist/Sentiments';
@@ -7,6 +7,7 @@ import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { container } from 'tsyringe';
 import { Logger } from 'winston';
+import { ConfigFile } from '../ConfigFile';
 import { ExeDBAnalysis } from './Analysis';
 import { ExeDBEntry } from './Entry';
 
@@ -164,8 +165,8 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 
 	async bulkDB(dbPath: string): Promise<DBController.bulkDBResult> {
 		if (!this.db) throw new Error('no db instance');
-		const config = await getCurrentData('root');
-		if (!config.email) {
+		const { email } = await ConfigFile.get();
+		if (!email) {
 			throw new Error('Debe ingresar su correo en configuraciones');
 		}
 		const file = new File(dbPath);
@@ -180,7 +181,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 				'https://www.gpi.valdomero.live/dbcontroller/v1/bulk',
 				formData,
 				{
-					params: { by: config.email },
+					params: { by: email },
 					headers: {
 						'X-API-KEY': 'prendalacamara',
 						...formData.getHeaders(),

@@ -1,3 +1,4 @@
+import { ConfigFile } from '@/controllers/ConfigFile';
 import {
 	backOrExit,
 	extractorInfo,
@@ -5,7 +6,6 @@ import {
 	SentimentList,
 	termmOrBackOrExit,
 } from '@/helpers/input';
-import { getCurrentData } from '@/tools/File';
 import extractors from 'ea-core-gpi-pi';
 import { URL } from 'url';
 let cError = '';
@@ -19,13 +19,15 @@ function getParams(url: string): { subReddit: string; postId: string } {
 	if (paths.length != 7) throw new Error('Invalid URL');
 	const subReddit = paths[2];
 	const postId = paths[4];
+	if (!cURL.origin.includes('reddit.com')) throw new Error('La URL no pertenece a Reddit');
+
 	if (!subReddit || !postId) throw new Error('Invalid subreddit or postId');
 	else return { postId, subReddit };
 }
 export default async (): Promise<void> => {
 	const reddit = extractors.get('reddit-extractor');
 	const back = true;
-	const { limit = 1000 } = await getCurrentData('root');
+	const { limit } = await ConfigFile.get();
 	while (back) {
 		console.clear();
 		console.log(nav);
@@ -37,10 +39,11 @@ export default async (): Promise<void> => {
 			}
 			const url = await termmOrBackOrExit('Ingrese la url');
 			if (url === 0) return;
+			const { postId, subReddit } = getParams(url);
+
 			console.clear();
 			console.log(nav + '\n');
 			console.log('- Obteniendo comentarios...');
-			const { postId, subReddit } = getParams(url);
 			await reddit.deploy();
 			const result = await reddit.obtain({
 				postId,
