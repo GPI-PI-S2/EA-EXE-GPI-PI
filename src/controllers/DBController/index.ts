@@ -1,7 +1,7 @@
 import { File } from '@/tools/File';
 import axios from 'axios';
 import { Anal, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
-import { Sentiments } from 'ea-ieom2-gpi-pi/dist/Sentiments';
+import { list } from 'ea-ieom2-gpi-pi/dist/barrer';
 import FormData from 'form-data';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 	$entry: DBEntry;
 	$analysis: DBAnalysis;
 
-	private readonly sentiments: Sentiments.list = {
+	private readonly sentiments: list = {
 		asertividad: 0,
 		'autoconciencia emocional': 0,
 		autoestima: 0,
@@ -117,10 +117,7 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 				.join(', ') +
 			', COUNT (e._id) as `total` FROM Entry e, Analysis a WHERE a.`_entryId` = e.`_id` AND e.metaKey = ?;';
 
-		const res = await this.db.get<Sentiments.list & { total: number }>(
-			sentimentsAVGSQL,
-			metakey,
-		);
+		const res = await this.db.get<list & { total: number }>(sentimentsAVGSQL, metakey);
 		this.checkDBError(res, 'calc');
 		const sentimentsAVG = { ...res };
 		delete sentimentsAVG.total;

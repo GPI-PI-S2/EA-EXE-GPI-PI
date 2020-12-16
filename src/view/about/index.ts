@@ -17,7 +17,6 @@ export default async (): Promise<void> => {
 ╚═════════════════════╝
 `);
 			console.table(aboutUs);
-			console.log('\n');
 			const nextAction = await backOrExit();
 			if (nextAction === 0) return;
 			return;

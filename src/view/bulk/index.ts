@@ -17,7 +17,7 @@ export default async (): Promise<void> => {
 			await DBController.connect();
 			console.log('⏳ Subiendo DB local...');
 			const result = await DBController.bulkDB(`LocalStore.db`);
-			console.log('✅ DB Sincronizada');
+			console.log('✅ DB Sincronizada\n');
 			console.table(result);
 			await DBController.disconnect();
 		} else {
@@ -26,7 +26,8 @@ export default async (): Promise<void> => {
 		const nextAction = await backOrExit();
 		if (nextAction === 0) return;
 	} catch (error) {
-		console.log('⚠️ Falló la sincronización', error);
+		const message = error.message ? error.message : 'Error desconocido';
+		console.log('❌ Falló la sincronización:', message);
 		await backOrExit();
 	}
 	console.clear();
