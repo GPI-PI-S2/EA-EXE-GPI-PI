@@ -17,6 +17,11 @@ export default async (): Promise<void> => {
 		let extractorId = '';
 		while (!extractorId) {
 			console.clear();
+			console.log(`
+╔════════════════════╗
+║ Main > Extractores ║
+╚════════════════════╝
+            `);
 			console.log('Selecciona un extractor:\n');
 			selectableList(displayExtractors);
 			const index = await termmOrBackOrExit('Ingrese el identificador ');
