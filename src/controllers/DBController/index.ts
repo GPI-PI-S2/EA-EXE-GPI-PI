@@ -1,8 +1,8 @@
-import { File } from '@/tools/File';
 import axios from 'axios';
 import { Anal, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
 import { list } from 'ea-ieom2-gpi-pi/dist/barrer';
 import FormData from 'form-data';
+import { createReadStream, existsSync, unlinkSync } from 'fs';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { container } from 'tsyringe';
@@ -166,15 +166,13 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 		if (!email) {
 			throw new Error('Debe ingresar su correo en configuraciones');
 		}
-		const file = new File(dbPath);
-		const dbExists = await file.exist();
+		const dbExists = existsSync(dbPath);
 		if (!dbExists) throw new Error('No existe base de datos local');
-		const db = await file.get();
 		const formData = new FormData();
-		formData.append('db', db);
-		let data: DBController.bulkDBResult = null;
+		const stream = createReadStream(dbPath);
+		formData.append('db', stream);
 		try {
-			const { data: result } = await axios.post(
+			const response = await axios.post<{ data: DBController.bulkDBResult }>(
 				'https://www.gpi.valdomero.live/dbcontroller/v1/bulk',
 				formData,
 				{
@@ -183,14 +181,19 @@ CREATE TABLE IF NOT EXISTS \`Analysis\` (
 						'X-API-KEY': 'prendalacamara',
 						...formData.getHeaders(),
 					},
+					maxContentLength: Infinity,
+					maxBodyLength: Infinity,
 				},
 			);
-			data = result;
-			await file.delete();
+			if (response.status !== 200) throw new Error('problemas al subir la base de datos');
+			const responseData = response.data;
+			stream.unpipe();
+			stream.destroy();
+			stream.close();
+			if (!process.platform.startsWith('win')) unlinkSync(dbPath);
+			return responseData.data;
 		} catch (error) {
-			console.error(error.response.data);
 			throw new Error(error);
 		}
-		return data as DBController.bulkDBResult;
 	}
 }

@@ -1,5 +1,5 @@
-import { isObject } from 'ea-common-gpi-pi';
 import { ConfigType, ExtractorConfig } from '@/helpers/input';
+import { isObject } from 'ea-common-gpi-pi';
 import fs, { ReadStream } from 'fs';
 export class File {
 	constructor(private filepath: string) {}
